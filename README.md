@@ -28,6 +28,7 @@ WiVSD là dự án nghiên cứu/trải nghiệm kỹ thuật về **ứng dụn
 - Các công cụ mã nguồn mở tiêu biểu:
   - Intel 5300 CSI Tool, Nexmon CSI, Atheros CSI Tool
   - esp-csi (ESP32), FeitCSI (Intel AX200/AX210), CSIKit (phân tích/parse dữ liệu)
+- Tài liệu về CSI: [Understanding CSI from Tsinghua University](https://tns.thss.tsinghua.edu.cn/wst/docs/pre)
 
 ## Trạng thái & đóng góp
 - Repo đang ở giai đoạn tài liệu hóa/khảo sát. Rất hoan nghênh các PR bổ sung:
