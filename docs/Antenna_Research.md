@@ -1,3 +1,10 @@
+<style>
+    img {
+        width: 500px; /* Tăng kích thước chiều rộng */
+        height: auto; /* Giữ nguyên tỷ lệ */
+    }
+</style>
+
 # Báo Cáo: Ảnh Hưởng của Loại Anten Đến Chất Lượng CSI
 
 ## 1. Giới Thiệu
@@ -32,13 +39,8 @@ Loại anten sử dụng ảnh hưởng trực tiếp đến:
 - Một thanh dẫn thẳng hoặc xoắn
 - Hoặc mảng tuyến tính chứa nhiều phần tử nhỏ
 
-**Bức xạ (2D):**
-\
-![alt text](../imgs/download.jpg)
-\
-**Bức xạ (3D):**
-\
-![alt text](zbCPI.png)
+**Minh họa:**\
+![alt text](../imgs/omni-radiation.png)\
 
 **Đặc tính:**
 - Gain: 2-5 dBi (tùy thiết kế)
@@ -144,17 +146,9 @@ Loại anten sử dụng ảnh hưởng trực tiếp đến:
 - Hoặc một patch antenna với feed point tối ưu
 - Phía sau có chiếc kim loại phản xạ (ground plane)
 
-**Diagram bức xạ (2D):**
-```
-        ↑ 0°
-      ╱ ╲
-    ╱     ╲   Main lobe
-  ╱         ╲
-└─────────────┘  Gain: 8-14 dBi
-  ╲         ╱
-    ╲     ╱   Side lobes
-      ╲ ╱
-```
+**Minh họa:**
+
+![](../imgs/panel-radiation.png)
 
 **Đặc tính:**
 - Gain: 8-14 dBi (phụ thuộc thiết kế)
@@ -279,19 +273,9 @@ Loại anten sử dụng ảnh hưởng trực tiếp đến:
 - Nhiều directors (phía trước, 3-10 cái)
 - Xếp thành một đường thẳng
 
-**Diagram bức xạ (2D):**
-```
-        ↑ 0°
-       ╱ ╲
-     ╱     ╲   Very narrow main lobe
-   ╱         ╲
- ╱             ╲
-└─────────────────┘  Gain: 12-18+ dBi
-  ╲             ╱    Beamwidth: 20-40°
-    ╲         ╱      (rất hẹp)
-      ╲     ╱
-        ╲ ╱
-```
+**Minh họa:**
+
+![](../imgs/yagi-radiation.png)
 
 **Đặc tính:**
 - Gain: 12-18 dBi (cao nhất trong các loại simple antenna)
@@ -712,3 +696,5 @@ Phát hiện: Yếu  OK    Tốt  Tốt   Tốt   OK   Yếu
 [9] RF Engineer. (2023). CSI Quantization and Its Effect on System Performance. https://rfengineer.net/channel-state-information-csi/
 
 [10] Rappaport, T. S. (2002). Wireless Communications: Principles and Practice (2nd ed.). Prentice Hall.
+
+[11] Cisco: Antenna Patterns and Their Meaning. https://www.avw.co.nz/wp-content/uploads/2020/08/Antenna-Patterns-and-Their-Meaning.pdf
