@@ -284,14 +284,14 @@ CSI có thể được trích xuất:
 
 | **Bài Báo** | **Năm** | **Ứng Dụng** | **Kết Quả** |
 |---|---|---|---|
-| Sleep Respiratory Rate Monitoring with Microcontroller Wi-Fi | 2023 | Sleep respiration monitoring | **MAD = 2.60 brpm @ 1-2m LOS** (Hampel + Butterworth filtering) |
-| CSI-Bench: Large-Scale In-the-Wild WiFi Sensing Dataset | 2025 | Benchmarking WiFi sensing | ESP32-S3 @ 2.4 GHz; hybrid with Broadcom |
-| Lightweight IoT WiFi Sensing (WoWMoM) | 2020 | Device-free activity recognition | First lightweight standalone IoT CSI solution |
-| PulseFi: Low Cost Robust ML System for Vital Signs | 2025 | Heart rate + respiration + apnea | LSTM model; ESP32 CSI dataset |
-| ESPectre: Motion Detection for Home Assistant | 2024 | Motion detection, smart home | ESP32-S3/C6; variance-based; no ML required |
+| [Sleep Respiratory Rate Monitoring with Microcontroller Wi-Fi](https://www.mdpi.com/2076-3417/14/15/6458) | 2023 | Sleep respiration monitoring | **MAD = 2.60 brpm @ 1-2m LOS** (Hampel + Butterworth filtering) |
+| [CSI-Bench: Large-Scale In-the-Wild WiFi Sensing Dataset](https://arxiv.org/abs/2505.21866) | 2025 | Benchmarking WiFi sensing | ESP32-S3 @ 2.4 GHz; hybrid with Broadcom |
+| [Lightweight IoT WiFi Sensing (WoWMoM)](https://ieeexplore.ieee.org/document/9217780) | 2020 | Device-free activity recognition | First lightweight standalone IoT CSI solution |
+| [PulseFi: Low Cost Robust ML System for Vital Signs](https://arxiv.org/abs/2510.24744) | 2025 | Heart rate + respiration + apnea | LSTM model; ESP32 CSI dataset |
+| [ESPectre: Motion Detection for Home Assistant](https://github.com/francescopace/espectre) | 2024 | Motion detection, smart home | ESP32-S3/C6; variance-based; no ML required |
 
 **Bài báo chính:**
-- Burimas, R., et al. (2023). "Monitoring the sleep respiratory rate with microcontroller Wi-Fi". *Applied Sciences*, 14(14), 6458. [PDF URL pending but reference in repository]
+- Burimas, R., et al. (2023). "Monitoring the sleep respiratory rate with microcontroller Wi-Fi". *Applied Sciences*, 14(14), 6458. [Here](https://www.mdpi.com/2076-3417/14/15/6458)
 
 #### 2.5.4 Ứng Dụng Nổi Bật
 
