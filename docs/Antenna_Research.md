@@ -1,10 +1,3 @@
-<style>
-    img {
-        width: 500px; /* Tăng kích thước chiều rộng */
-        height: auto; /* Giữ nguyên tỷ lệ */
-    }
-</style>
-
 # Báo Cáo: Ảnh Hưởng của Loại Anten Đến Chất Lượng CSI
 
 ## 1. Giới Thiệu
@@ -361,10 +354,11 @@ Loại anten sử dụng ảnh hưởng trực tiếp đến:
 
 **Kết quả CSI:**
 
-Góc:    -30°  -20°  -10°   0°  +10°  +20°  +30°
-Gain:   -5dB  -2dB  -1dB   0dB -1dB  -2dB  -5dB
-CSI Ampl: Low  Mid   High  Max  High  Mid   Low
-Phát hiện: Yếu  OK    Tốt  Tốt   Tốt   OK   Yếu
+| Góc | -30° | -20° | -10° | 0° | +10° | +20° | +30° |
+|---|---|---|---|---|---|---|---|
+| Gain | -5dB | -2dB | -1dB | 0dB | -1dB | -2dB | -5dB |
+| CSI Ampl | Low | Mid | High | Max | High | Mid | Low |
+| Phát hiện | Yếu | OK | Tốt | Tốt | Tốt | OK | Yếu |
 
 **Phân tích:**
 - Khi người ở 0° (trước mũi Yagi): Phát hiện tốt (accuracy 95%)
@@ -624,6 +618,58 @@ Phát hiện: Yếu  OK    Tốt  Tốt   Tốt   OK   Yếu
 - Không phù hợp cho gesture gần (cần toàn thân được cover)
 
 **Khuyến nghị:** **Panel** (nếu setup controlled) hoặc **Omni** (nếu gesture từ mọi góc)
+
+### 8.5 Bài Toán 5: Đo Vital Signs (Nhịp Thở / Nhịp Tim) Ở Gần (0.5-3m)
+
+**Yêu cầu:**
+- Đo nhịp thở (0.2-0.4 Hz) và nhịp tim (0.8-1.5 Hz)
+- SNR cao, CSI ổn định theo thời gian
+- Người ngồi yên, hướng nhìn tương đối cố định
+
+**Phân tích:**
+
+**Omni (★★★☆☆):**
+- Ưu: Thu được multipath phong phú (tín hiệu phản xạ từ ngực)
+- Nhược: Nhiễu từ mọi hướng → phase noise tăng, khó tách dao động nhỏ
+- Kết quả: Đo nhịp thở tốt ở 1-2m, nhịp tim dễ bị nhiễu
+
+**Panel (★★★★★):**
+- Ưu: SNR cao, CSI sạch → dễ tách dao động biên độ rất nhỏ
+- Nhược: Cần người trong main lobe, hướng tương đối cố định
+- Kết quả: Nhịp thở và nhịp tim rõ ở 1-3m, ổn định nhất
+
+**Yagi (★★★☆☆):**
+- Ưu: Gain cao, CSI rất sạch
+- Nhược: Beam quá hẹp → lệch góc nhỏ làm mất tín hiệu
+- Kết quả: Tốt nếu có tripod cố định và người ngồi yên đúng hướng
+
+**Khuyến nghị:** **Panel** (tối ưu cho vital signs trong phòng)
+
+### 8.6 Bài Toán 6: Phát Hiện Hiện Diện / Đếm Người (Presence & Occupancy)
+
+**Yêu cầu:**
+- Phát hiện có/không có người trong phòng 5×8m
+- Có thể đếm 1-3 người, không cần phân biệt hành động chi tiết
+- Ưu tiên coverage toàn phòng
+
+**Phân tích:**
+
+**Omni (★★★★★):**
+- Ưu: Coverage 360°, nhạy với thay đổi multipath khi có người
+- Nhược: Dễ nhiễu, cần lọc thời gian/khử nhiễu nền
+- Kết quả: Phát hiện hiện diện rất tốt, đếm người mức cơ bản
+
+**Panel (★★★★☆):**
+- Ưu: CSI sạch, ổn định
+- Nhược: Chỉ 1 hướng → cần 2-4 panel để cover toàn phòng
+- Kết quả: Tốt nếu lắp đa hướng
+
+**Yagi (★☆☆☆☆):**
+- Ưu: CSI sạch
+- Nhược: Beam hẹp, không cover toàn phòng → bỏ sót mục tiêu
+- Kết quả: Không phù hợp cho presence/occupancy trong phòng
+
+**Khuyến nghị:** **Omni** (đơn giản, coverage tốt) hoặc **Panel đa hướng** (nếu cần CSI sạch hơn)
 
 ---
 
