@@ -52,6 +52,7 @@ Trong đó:
 - $\phi[n, k, a]$ = **pha (phase)** - là góc từ -π đến π
 
 Mỗi giá trị CSI là một **số phức** có thể biểu diễn dưới dạng:
+
 $$
 H[n, k, a] = \text{Real}[n, k, a] + j \cdot \text{Imag}[n, k, a]
 $$
@@ -132,6 +133,145 @@ TX antenna
     Combination contains spatial information!
 
 Bằng cách **so sánh pha giữa các antenna**, ta có thể ước lượng **hướng đến (Angle of Arrival - AoA)**[2].
+
+
+### 3.4 Quá Trình Tính Toán CSI tại Hardware
+
+#### 3.4.1 Overview
+
+WiFi receiver tính CSI (Channel State Information) thông qua channel estimation trong quá trình OFDM demodulation. Đây là bước bắt buộc trong mọi WiFi chipset để decode dữ liệu, nhưng CSI là kết quả phụ được lưu lại cho sensing. Quá trình này diễn ra hoàn toàn ở physical layer (PHY) của WiFi NIC.
+
+#### 3.4.2 Nguyên Lý Tính Toán CSI
+
+Receiver sử dụng training sequence (preamble) trong mỗi WiFi packet để estimate channel:
+
+```
+1. Transmitter gửi Known symbols (LTF - Long Training Field)
+2. Receiver so sánh received signal Y với known signal X  
+3. Tính H = Y / X → Đây chính là CSI matrix
+```
+
+Công thức cơ bản:
+
+$$
+Y = H \times X + N
+$$
+
+$$
+H = Y \times X^{-1}
+$$
+
+Trong đó:
+- $Y$: Received signal (complex values)
+- $X$: Transmitted preamble (đã biết trước)
+- $H$: Channel matrix → **CSI**
+- $N$: Noise
+
+#### 3.4.3 Chi Tiết Quy Trình OFDM CSI Extraction
+
+**Cấu trúc Packet WiFi**:
+```
+| Preamble (L-STF + L-LTF + ... ) | SIGNAL | DATA |
+           ↓ Training symbols
+      Channel Estimation Block
+           ↓ H[k] cho mỗi subcarrier k
+```
+
+**Bước 1: LTF Correlation**
+
+```
+received_LTF[n] ⊛ known_LTF[n] → Channel Impulse Response (CIR)
+```
+
+LTF là chuỗi PN sequence được thiết kế để có autocorrelation tốt.
+
+**Bước 2: FFT → CFR (Channel Frequency Response)**
+
+$$
+\text{CSI}[k] = \text{FFT}(\text{CIR})[k], \quad k = -58 \to 64 \text{ (802.11n, 20MHz)}
+$$
+
+Mỗi subcarrier $k$ có complex value $H[k] = |H[k]|e^{j\angle H[k]}$
+
+**Bước 3: MIMO Extension**
+
+Với $N_{tx} \times N_{rx}$ antennas:
+
+$$
+H \in \mathbb{C}^{N_{rx} \times N_{tx} \times N_{\text{subcarriers}}}
+$$
+
+Ví dụ Intel 5300: $3 \times 3 \times 30 = 270$ complex values/packet.
+
+#### 3.4.4 Code Example: CSI Computation (MATLAB)
+
+```matlab
+function CSI = compute_CSI(rx_LTF, tx_LTF_known)
+    % Step 1: Time-domain correlation → CIR
+    cir = xcorr(rx_LTF, tx_LTF_known);
+    
+    % Step 2: FFT → CFR (CSI)
+    N_fft = 64; % 20MHz channel
+    CSI = fft(cir(max(length(tx_LTF_known), length(rx_LTF)):end), N_fft);
+    
+    % Step 3: Subcarrier mapping (active 52/56 subcarriers)
+    active_sc = [-26:-1, 1:26, 32:58]; % 802.11n pattern
+    CSI = CSI(active_sc + N_fft/2 + 1);
+end
+```
+
+#### 3.4.5 Hardware Implementations So Sánh
+
+| NIC | Estimation Method | Subcarriers | Output Format | Tính Sẵn Có |
+|-----|-------------------|-------------|---------------|-----------|
+| **Intel 5300** | LS (Least Square) | 30 (56→30 sau filtering) | /dev/CSI binary | Khó, cần eBay |
+| **Atheros AR9280** | MMSE | 56 | Nexmon CSI | Dễ hơn, OpenWRT |
+| **ESP32-CSI** | LS + Interpolation | 64 | `esp_wifi_set_csi_rx_cb()` | Rẻ nhất ~200k₫ |
+| **Broadcom** | MMSE + Equalization | 234 (80MHz) | Private API | TP-Link router |
+
+**LS vs MMSE**:
+- **LS (Least Square)**: $H[k] = Y[k]/X[k]$ (đơn giản, nhưng có nhiều noise)
+- **MMSE (Minimum Mean Square Error)**: $H[k] = R_{hh} \times (R_{hh} + \sigma^2 I)^{-1} \times Y[k]/X[k]$ (chính xác hơn)
+
+#### 3.4.6 Phase Calibration (Quan Trọng!)
+
+CSI thô có phase offset từ:
+
+$$
+\angle H_{\text{real}} = \angle H_{\text{channel}} - 2\pi f_c\tau - \phi_{\text{SFO}} - \phi_{\text{CFO}}
+$$
+
+Trong đó:
+- $\tau$: Propagation delay
+- $\phi_{\text{SFO}}$: Sampling Frequency Offset
+- $\phi_{\text{CFO}}$: Carrier Frequency Offset
+
+**Code Python Phase Unwrapping**:
+
+```python
+import numpy as np
+
+def phase_calibration(csi_matrix):
+    """
+    Calibrate phase của CSI matrix
+    Input: csi_matrix shape (n_packets, n_subcarriers) - complex values
+    Output: phase-calibrated CSI
+    """
+    phase = np.angle(csi_matrix)
+    
+    # Unwrap phase per subcarrier để remove discontinuities
+    phase_unwrapped = np.unwrap(phase, axis=1)
+    
+    # Tính phase difference giữa subcarriers
+    phase_diff = phase_unwrapped[:, 1:] - phase_unwrapped[:, :-1]
+    
+    # Calibrate bằng cách remove phase trend
+    phase_calibrated = phase_unwrapped - np.mean(phase_diff, axis=1, keepdims=True)
+    
+    # Convert lại thành complex numbers
+    amplitude = np.abs(csi_matrix)
+    return amplitude * np.exp(1j * phase_calibrated)
+```
 
 ---
 
