@@ -25,6 +25,7 @@ WiVSD là dự án nghiên cứu/trải nghiệm kỹ thuật về **ứng dụn
 
 ## Tài liệu & tham khảo
 - Chi tiết về thông số thiết bị, ưu/nhược điểm, và danh sách bài báo: xem [`CSI_Devices_Research_Report.md`](./docs/CSI_Devices_Research_Report.md).
+- Các coongông 
 - Các công cụ mã nguồn mở tiêu biểu:
   - Intel 5300 CSI Tool, Nexmon CSI, Atheros CSI Tool
   - esp-csi (ESP32), FeitCSI (Intel AX200/AX210), CSIKit (phân tích/parse dữ liệu)
