@@ -568,4 +568,3 @@ Hệ thống này có đủ khả năng để implement vital signs monitoring �
 
 **Ngày chuẩn bị**: 9 Tháng 2, 2026  
 **Cho**: Đề tài Vital Signs Detection sử dụng WiFi CSI  
-**Tác giả**: Khảnh Development Team, VienHLKH
