@@ -14,24 +14,25 @@ Lựa chọn này được dựa trên các yêu cầu kỹ thuật cụ thể c
 
 ## 2. Tại Sao Chọn ESP32-C6?
 
-### 2.1 Hỗ Trợ WiFi 6 (802.11ax) và WiFi 6E
+### 2.1 WiFi 6 (802.11ax) trên 2.4 GHz
 
 | Tiêu Chí | ESP32-C6 | ESP32-S3 | Intel 5300 | Atheros |
 |----------|----------|----------|-----------|---------|
-| **WiFi Standard** | 802.11ax (WiFi 6) | 802.11n (WiFi 4) | 802.11n (WiFi 4) | 802.11n (WiFi 4) |
-| **Frequency Bands** | 2.4 GHz, 5 GHz, 6 GHz | 2.4 GHz, 5 GHz | 5 GHz | 2.4/5 GHz |
-| **Bandwidth Support** | Up to 160 MHz | 40 MHz max | 40 MHz max | 40 MHz max |
-| **Subcarriers (80MHz)** | 234 subcarriers | ~56 subcarriers | ~56 subcarriers | ~56 subcarriers |
+| **WiFi Standard** | **802.11ax (WiFi 6)** | 802.11n (WiFi 4) | 802.11n (WiFi 4) | 802.11n (WiFi 4) |
+| **Frequency Bands** | **2.4 GHz Only** | 2.4 GHz | 2.4/5 GHz | 2.4/5 GHz |
+| **Channel Bandwidth** | 20 MHz / 40 MHz | 20 MHz / 40 MHz | 20/40 MHz | 20/40 MHz |
+| **Subcarrier Spacing** | **78.125 kHz** (Siêu mịn) | 312.5 kHz | 312.5 kHz | 312.5 kHz |
+| **Active Subcarriers (20MHz)** | **~234 subcarriers** | ~56 subcarriers | ~56 subcarriers | ~56 subcarriers |
 
-**Ưu điểm của WiFi 6**:
-- **Nhiều subcarriers hơn** → Độ phân giải cao hơn cho chi tiết chuyển động nhỏ (breathing, heartbeat)
-- **OFDMA technology** → Tín hiệu sạch hơn, ít nhiễu
-- **Dải tần số rộng hơn** → Tính linh hoạt cao
+**Ưu điểm vượt trội của ESP32-C6 (Dù chỉ 20MHz)**:
+Mặc dù ESP32-C6 chỉ hoạt động trên băng tần 2.4GHz với băng thông tối đa 40MHz (thường dùng 20MHz cho ổn định), nhưng công nghệ **WiFi 6 (802.11ax)** mang lại lợi thế cực lớn về CSI:
+- **Mật độ Subcarriers gấp 4 lần**: Khoảng cách giữa các sóng mang phụ giảm từ 312.5 kHz (WiFi 4) xuống còn 78.125 kHz (WiFi 6).
+- **Độ phân giải tần số cao hơn**: Cùng một băng thông 20MHz, ta thu được **~234 điểm dữ liệu CSI** thay vì chỉ 52-56 điểm như các chip cũ.
+- Điều này giống như việc chuyển từ camera 5MP lên 20MP - hình ảnh (CSI) trở nên sắc nét hơn nhiều.
 
-Đối với **vital signs detection**, việc có nhiều subcarriers là yếu tố **quan trọng cực kỳ**, vì:
-- Nhịp thở (~0.2-0.33 Hz) và nhịp tim (~1-1.7 Hz) tạo ra biến đổi CSI rất nhỏ
-- Nhiều subcarriers cho phép phát hiện những biến thiên tinh tế này trên toàn bộ spectrum
-- Phùng hợp với các paper nghiên cứu gần đây (Wang et al. 2017, Liu et al. 2015)[1][2]
+> [!NOTE]
+> *Lưu ý về câu hỏi Băng thông 160 MHz*:
+> Về lý thuyết, băng thông 160 MHz giúp tăng độ phân giải thời gian (time resolution) để tách đa đường (multipath). Tuy nhiên, với **Vital Signs (nhịp thở/tim)**, yếu tố quan trọng hơn là độ nhạy biên độ/pha và mật độ mẫu trong miền tần số. ESP32-C6 với mật độ subcarrier cao bù đắp hoàn toàn cho việc thiếu băng thông rộng 160 MHz.
 
 ### 2.2 Quá Trình Đo CSI trên ESP32-C6
 
@@ -138,7 +139,7 @@ Omni Antenna (6 dBi)      Panel Antenna (8 dBi)
 **Specification**:
 - **Loại**: PCB Omni antenna hoặc IPEX external antenna
 - **Gain**: 5-6 dBi hoặc 0 dBi (built-in PCB antenna)
-- **Bandwidth**: 2.4-5.8 GHz
+- **Bandwidth**: 2.4-2.5 GHz (Tối ưu cho ESP32-C6)
 - **Impedance**: 50 Ω
 - **Polarization**: Linear (vertical)
 
@@ -146,7 +147,7 @@ Omni Antenna (6 dBi)      Panel Antenna (8 dBi)
 - **Mục đích**: Phát tín hiệu training packets đến receiver ở **tất cả hướng**
 - Trong vital signs application, người đứng ở **bất kỳ vị trí nào** trong phòng đều cần được phát hiện
 - Omni antenna đảm bảo coverage toàn diện (360° horizontal, ~90° vertical)
-- Gain 6 dBi là **đủ tốt** để tín hiệu đạt receiver với SNR cao
+- **2.4 GHz xuyên tường tốt hơn**: So với 5/6 GHz, sóng 2.4 GHz có bước sóng dài hơn ($\lambda \approx 12.5$ cm), giúp xuyên qua chướng ngại vật và bao phủ phòng tốt hơn, rất phù hợp cho monitoring trong môi trường thực tế.
 
 **Ứng dụng cụ thể**:
 ```
@@ -167,7 +168,7 @@ Transmitter (Omni 6 dBi)
 **Specification**:
 - **Loại**: Panel antenna (planar array)
 - **Gain**: 8 dBi
-- **Bandwidth**: 2.4-5.8 GHz (hoặc 5-6 GHz riêng)
+- **Bandwidth**: 2.4 GHz (Chọn loại chuyên cho 2.4GHz sẽ tốt hơn loại dual-band)
 - **Impedance**: 50 Ω
 - **Beamwidth**: ~60-90° horizontal, ~30-40° vertical
 - **Directivity**: Medium (không quá narrow, nhưng tập trung hơn omni)
@@ -210,7 +211,7 @@ Trong đó:
 - $G_t$: Transmitter antenna gain (Omni ~5 dBi)
 - $G_r$: Receiver antenna gain (Panel ~8 dBi)
 - $PL$: Path loss in open space
-- $f$: Frequency (2.4 GHz or 5 GHz)
+- $f$: Frequency (2.4 GHz)
 - $d$: Distance (ví dụ 5 meters)
 
 **Example tại 2.4 GHz, 5 meters**:
@@ -265,7 +266,7 @@ SNR ≈ -7.7 - Noise_floor(-95 dBm) = 87.3 dB
 | **Detectable heartbeat** | ✓✓✓ Dễ | ✗ Rất khó | ✓✓✓ Dễ |
 | **Coverage rộng** | ✓✓ Bình thường | ✓✓✓ Toàn diện | ✗ Hẹp |
 | **Setup dễ** | ✓✓✓ Dễ | ✓✓✓ Dễ | ✗ Khó (cần định hướng) |
-| **Chi phí** | ✓✓ Rẻ ($5-10) | ✓✓✓ Rẻ nhất | ✗ Đắt ($20+) |
+    | **Chi phí** | ✓✓ Rẻ ($5-10) | ✓✓✓ Rẻ nhất | ✗ Đắt ($20+) |
 | **Kích thước** | ✓✓ Nhỏ (10x6cm) | ✓✓✓ Nhỏ nhất | ✗ Lớn (20-30cm) |
 
 **Kết luận**: **8 dBi panel antenna cân bằng hoàn hảo** giữa hiệu suất (detect vital signs) và tính thực tiễn (setup dễ, chi phí rẻ, kích thước vừa).
@@ -318,10 +319,10 @@ Người đứng: Giữa hoặc cạnh RX, trong vùng coverage của Panel
 | Thông Số | Chi Tiết |
 |----------|----------|
 | **Sampling rate** | 100-200 CSI packets/second (phụ thuộc frame rate) |
-| **Subcarriers** | 234 subcarriers @ 80 MHz bandwidth |
-| **Complex values/packet** | ~234 (1 TX antenna) × 3 (RX antennas) = 702 values/packet |
-| **Data size/packet** | ~1.4 KB (uncompressed) |
-| **Data rate** | 140-280 KB/second (raw CSI) |
+| **Subcarriers** | **~234 active subcarriers** @ 20 MHz (HE-LTF) |
+| **Complex values/packet** | ~234 (1 TX antenna) × 1 (RX antenna) = 234 values (đối với C6 1x1 SISO) |
+| **Data size/packet** | ~1.0 KB |
+| **Data rate** | 100-200 KB/second |
 | **Real-time processing** | ✓ Khả thi (filtering + FFT < 10ms) |
 
 ### 5.2 Power Consumption
@@ -359,8 +360,8 @@ model.predict([breathing_amp, heart_rate])
 
 | Yếu Tố | Lý Do |
 |--------|-------|
-| **ESP32-C6 (not S3, not Intel)** | WiFi 6, 234 subcarriers, rẻ, phù hợp vital signs |
-| **Omni Antenna cho TX** | Coverage toàn diện, phát đều, phù hợp sensing application |
+| **ESP32-C6 (WiFi 6 - 2.4GHz)** | **Subcarrier dày đặc (78.125 kHz spacing)** giúp CSI chi tiết gấp 4 lần WiFi 4 |
+| **Omni Antenna cho TX** | Coverage toàn diện, sóng 2.4GHz xuyên thấu tốt |
 | **8 dBi Panel cho RX** | Cân bằng SNR cao + coverage vừa + rẻ + dễ setup |
 
 ### 6.2 Bill of Materials (BOM)
@@ -368,8 +369,8 @@ model.predict([breathing_amp, heart_rate])
 | Thành phần | Số lượng | Giá (USD) | Ghi Chú |
 |-----------|---------|-----------|--------|
 | ESP32-C6 DevKit M1 | 2 | $12 × 2 | Transmitter + Receiver |
-| Omni IPEX Antenna (2.4-5GHz, 5dBi) | 1 | $4 | TX antenna |
-| Panel Antenna (2.4-5GHz, 8dBi, SMA) | 1 | $8 | RX antenna |
+| Omni IPEX Antenna (2.4GHz, 5dBi) | 1 | $4 | TX antenna |
+| Panel Antenna (2.4GHz, 8dBi, SMA) | 1 | $8 | RX antenna |
 | SMA to IPEX Adapter | 1 | $2 | Connect panel antenna to RX |
 | USB Power Bank (5000mAh) | 2 | $10 × 2 | Power supply |
 | USB cables + connectors | 1 | $3 | Serial debug, programming |
@@ -379,7 +380,7 @@ model.predict([breathing_amp, heart_rate])
 
 | Phương Án | Ưu Điểm | Nhược Điểm | Chi Phí |
 |-----------|---------|-----------|--------|
-| **ESP32-C6 + Panel 8dBi** ✓ | WiFi 6, CSI sạch, rẻ | Cần phát triển software | $60-70 |
+| **ESP32-C6 + Panel 8dBi** ✓ | WiFi 6 (High density CSI), Rẻ | Chỉ 2.4 GHz, Cần code firmware | $60-70 |
 | Intel 5300 + external antenna | Tool support tốt, ổn định | Cũ, khó mua, đắt, không WiFi 6 | $80-120 |
 | Atheros AR9003 | Hỗ trợ Linux tốt | WiFi 4, subcarriers ít | $70-100 |
 | TP-Link router + monitor | Thiết bị thương mại | Khó access CSI API, proprietary | $100-200 |
@@ -535,7 +536,7 @@ CSI Raw Data → Amplitude Extraction → Butterworth Filter
 
 [5] **Espressif Systems. "ESP32-C6 Datasheet"**
 - Technical specifications
-- WiFi 6E capability documentation
+- WiFi 6 (802.11ax) 2.4 GHz capability documentation
 - CSI API reference
 - Link: https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/
 
@@ -556,11 +557,11 @@ CSI Raw Data → Amplitude Extraction → Butterworth Filter
 
 **ESP32-C6 với panel antenna 8dBi là lựa chọn tối ưu** cho đề tài WiFi CSI Vital Signs Detection vì:
 
-1. ✓ **Kỹ thuật**: WiFi 6, 234 subcarriers, SNR cao
+1. ✓ **Kỹ thuật**: WiFi 6 (Subcarrier density cao), SNR cao
 2. ✓ **Chi phí**: Rẻ (~$60-70 cho prototype)
 3. ✓ **Thực tiễn**: Dễ setup, ecosystem hỗ trợ tốt
 4. ✓ **Hiệu suất**: Đủ để detect breathing (~0.2 Hz) và heartbeat (~1.5 Hz)
-5. ✓ **Scalability**: Có thể mở rộng để multi-user sensing, ML integration
+5. ✓ **Scalability**: Có thể mở rộng tích hợp ML trên chip
 
 Hệ thống này có đủ khả năng để implement vital signs monitoring độc lập, và là nền tảng tốt cho research tiếp theo về WiFi CSI sensing applications.
 
