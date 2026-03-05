@@ -30,10 +30,10 @@ DATA_COLUMNS_NAMES = ['type', 'id', 'mac', 'rssi', 'rate', 'noise_floor', 'fft_g
 _SENTINEL = None
 
 
-def serial_reader_thread(ser, data_queue, log_file_fd, duration, stats, stop_event):
+def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event):
     """
     Reader thread: đọc từ serial, parse, đẩy parsed rows vào queue.
-    Dừng khi hết duration hoặc stop_event được set (Ctrl+C).
+    Dừng khi hết duration, đủ max_count, hoặc stop_event được set (Ctrl+C).
     """
     start_time = time.time()
 
@@ -120,6 +120,12 @@ def serial_reader_thread(ser, data_queue, log_file_fd, duration, stats, stop_eve
             data_queue.put(csi_data)
             stats['queued'] += 1
 
+            # Kiểm tra max_count
+            if max_count is not None and stats['queued'] >= max_count:
+                elapsed = time.time() - start_time
+                print(f'\n[READER] Reached packet count limit: {max_count} in {elapsed:.2f}s')
+                break
+
     except Exception as e:
         print(f'[READER] Error: {e}')
     finally:
@@ -173,7 +179,7 @@ def csv_writer_thread(data_queue, csv_writer, save_file_fd, stats):
         print(f'[WRITER] Finished – {written} rows written to CSV')
 
 
-def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, duration=None):
+def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, duration=None, max_count=None):
     """
     Khởi chạy 2 thread: reader (serial→queue) và writer (queue→CSV).
     """
@@ -192,7 +198,7 @@ def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, durati
 
     reader = threading.Thread(
         target=serial_reader_thread,
-        args=(ser, data_queue, log_file_fd, duration, stats, stop_event),
+        args=(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event),
         name='csi-reader',
         daemon=True
     )
@@ -244,6 +250,12 @@ Ví dụ sử dụng:
   # Thu thập dữ liệu trong 40 giây
   python serial_to_csv.py -p /dev/ttyUSB0 -d 40
 
+  # Thu thập đúng 4000 packet
+  python serial_to_csv.py -p /dev/ttyUSB0 -n 4000
+
+  # Kết hợp: tối đa 40s HOẶC 4000 packet (cái nào đến trước)
+  python serial_to_csv.py -p /dev/ttyUSB0 -d 40 -n 4000
+
   # Chỉ định file output cụ thể
   python serial_to_csv.py -p /dev/ttyUSB0 -s my_csi_data.csv -l my_log.txt
 
@@ -277,6 +289,13 @@ Ví dụ sử dụng:
                         default=None,
                         help='Thời gian thu thập dữ liệu (giây). VD: 40, 60.5 (mặc định: không giới hạn)')
 
+    parser.add_argument('-n', '--count',
+                        dest='max_count',
+                        action='store',
+                        type=int,
+                        default=None,
+                        help='Số lượng packet tối đa cần thu. VD: 4000 (mặc định: không giới hạn)')
+
     args = parser.parse_args()
     serial_port = args.port
 
@@ -302,7 +321,13 @@ Ví dụ sử dụng:
     if args.duration:
         print(f"[CONFIG] Duration: {args.duration}s")
     else:
-        print(f"[CONFIG] Duration: unlimited (Ctrl+C to stop)")
+        print(f"[CONFIG] Duration: unlimited")
+    if args.max_count:
+        print(f"[CONFIG] Max packets: {args.max_count}")
+    else:
+        print(f"[CONFIG] Max packets: unlimited")
+    if not args.duration and not args.max_count:
+        print(f"[CONFIG] Stop: Ctrl+C")
     print("=" * 70)
     print("[INFO] Press Ctrl+C to stop...\n")
 
@@ -320,7 +345,7 @@ Ví dụ sử dụng:
             log_file_fd = open(log_file_name, 'w')
 
         # Bắt đầu đọc và parse dữ liệu (multi-threaded)
-        csi_data_read_parse(serial_port, csv_writer, save_file_fd, log_file_fd, args.duration)
+        csi_data_read_parse(serial_port, csv_writer, save_file_fd, log_file_fd, args.duration, args.max_count)
 
     except serial.SerialException as e:
         print(f'\n[ERROR] Serial error: {e}')
