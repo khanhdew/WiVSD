@@ -33,7 +33,7 @@ _SENTINEL = None
 def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event):
     """
     Reader thread: đọc từ serial, parse, đẩy parsed rows vào queue.
-    Dừng khi hết duration, đủ max_count, hoặc stop_event được set (Ctrl+C).
+    Dừng khi hết duration, đủ max_count (CHỈ ĐẾM PACKET HỢP LỆ), hoặc stop_event được set (Ctrl+C).
     """
     start_time = time.time()
 
@@ -118,12 +118,13 @@ def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stat
 
             # Đẩy dữ liệu hợp lệ vào queue
             data_queue.put(csi_data)
-            stats['queued'] += 1
+            stats['valid_count'] += 1  # CHỈ đếm packet HỢP LỆ, KHÔNG tính invalid
 
-            # Kiểm tra max_count
-            if max_count is not None and stats['queued'] >= max_count:
+            # Kiểm tra max_count (chỉ dựa trên số packet HỢP LỆ)
+            if max_count is not None and stats['valid_count'] >= max_count:
                 elapsed = time.time() - start_time
-                print(f'\n[READER] Reached packet count limit: {max_count} in {elapsed:.2f}s')
+                print(f'\n[READER] Reached VALID packet limit: {max_count} in {elapsed:.2f}s')
+                print(f'[READER] (Invalid packets encountered: {stats["invalid"]} - NOT counted toward limit)')
                 break
 
     except Exception as e:
@@ -132,8 +133,9 @@ def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stat
         stats['elapsed'] = time.time() - start_time
         # Gửi sentinel để writer biết reader đã xong
         data_queue.put(_SENTINEL)
-        print(f'[READER] Finished – queued {stats["queued"]} packets, '
-              f'invalid {stats["invalid"]}, elapsed {stats["elapsed"]:.2f}s')
+        print(f'[READER] Finished – valid packets: {stats["valid_count"]}, '
+              f'invalid packets: {stats["invalid"]} (not counted), '
+              f'elapsed: {stats["elapsed"]:.2f}s')
 
 
 def csv_writer_thread(data_queue, csv_writer, save_file_fd, stats):
@@ -194,7 +196,8 @@ def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, durati
 
     data_queue = queue.Queue(maxsize=2000)
     stop_event = threading.Event()
-    stats = {'queued': 0, 'invalid': 0, 'written': 0, 'elapsed': 0.0}
+    # valid_count: chỉ đếm packet HỢP LỆ (đã pass validation), KHÔNG tính invalid
+    stats = {'valid_count': 0, 'invalid': 0, 'written': 0, 'elapsed': 0.0}
 
     reader = threading.Thread(
         target=serial_reader_thread,
@@ -228,10 +231,10 @@ def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, durati
         ser.close()
         print('[INFO] Serial port closed')
         print(f'[STATS] Duration: {stats["elapsed"]:.2f}s | '
-              f'Queued: {stats["queued"]} | '
-              f'Written: {stats["written"]} | '
-              f'Invalid: {stats["invalid"]} | '
-              f'Dropped: {stats["queued"] - stats["written"]}')
+              f'Valid packets: {stats["valid_count"]} | '
+              f'Written to CSV: {stats["written"]} | '
+              f'Invalid (not counted): {stats["invalid"]} | '
+              f'Dropped: {stats["valid_count"] - stats["written"]}')
 
 
 if __name__ == "__main__":
