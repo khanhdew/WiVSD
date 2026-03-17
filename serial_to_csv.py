@@ -22,15 +22,18 @@ import queue
 from io import StringIO
 from datetime import datetime
 
-# CSI data column definitions for ESP32-C5/C6
-DATA_COLUMNS_NAMES = ['type', 'id', 'mac', 'rssi', 'rate', 'noise_floor', 'fft_gain', 'agc_gain',
+# Expected number of columns from Serial (ESP32-C5/C6)
+EXPECTED_CSV_COLUMNS = 15
+
+# CSI data column definitions for CSV file (Added system 'timestamp' at index 0)
+DATA_COLUMNS_NAMES = ['timestamp', 'type', 'id', 'mac', 'rssi', 'rate', 'noise_floor', 'fft_gain', 'agc_gain',
                       'channel', 'local_timestamp', 'sig_len', 'rx_state', 'len', 'first_word', 'data']
 
 # Sentinel value to signal writer thread to finish
 _SENTINEL = None
 
 
-def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event):
+def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event, print_func=print):
     """
     Reader thread: đọc từ serial, parse, đẩy parsed rows vào queue.
     Dừng khi hết duration, đủ max_count (CHỈ ĐẾM PACKET HỢP LỆ), hoặc stop_event được set (Ctrl+C).
@@ -43,19 +46,28 @@ def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stat
             if duration is not None:
                 elapsed = time.time() - start_time
                 if elapsed >= duration:
-                    print(f'\n[READER] Reached duration limit: {duration}s (elapsed: {elapsed:.2f}s)')
+                    print_func(f'\n[READER] Reached duration limit: {duration}s (elapsed: {elapsed:.2f}s)')
                     break
 
             # Đọc một dòng từ serial (timeout giúp thoát vòng lặp khi stop_event)
             try:
+                if not ser.is_open:
+                    break
+                if ser.in_waiting == 0:
+                    time.sleep(0.01)
+                    continue
                 raw = ser.readline()
-            except serial.SerialException:
+            except (serial.SerialException, AttributeError, TypeError):
+                break
+            except Exception:
                 break
             if not raw:
                 continue
 
-            strings = str(raw)
-            strings = strings.lstrip('b\'').rstrip('\\r\\n\'')
+            try:
+                strings = raw.decode('utf-8', errors='ignore').strip()
+            except Exception:
+                continue
 
             # Tìm CSI_DATA
             if strings.find('CSI_DATA') == -1:
@@ -87,8 +99,8 @@ def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stat
                 stats['invalid'] += 1
                 continue
 
-            # Validate số lượng cột
-            if len(csi_data) != len(DATA_COLUMNS_NAMES):
+            # Validate số lượng cột (So với format gốc từ ESP32 là 15 cột)
+            if len(csi_data) != EXPECTED_CSV_COLUMNS:
                 if log_file_fd:
                     log_file_fd.write('element number is not equal to C5/C6 format\n')
                     log_file_fd.write(strings + '\n')
@@ -110,35 +122,52 @@ def serial_reader_thread(ser, data_queue, log_file_fd, duration, max_count, stat
             # Validate độ dài CSI raw data
             if csi_data_len != len(csi_raw_data):
                 if log_file_fd:
-                    log_file_fd.write('csi_data_len is not equal\n')
+                    log_file_fd.write('csi_data_len is not equal\n') 
                     log_file_fd.write(strings + '\n')
                     log_file_fd.flush()
                 stats['invalid'] += 1
                 continue
 
-            # Đẩy dữ liệu hợp lệ vào queue
-            data_queue.put(csi_data)
-            stats['valid_count'] += 1  # CHỈ đếm packet HỢP LỆ, KHÔNG tính invalid
+            # Thêm system timestamp vào đầu list (epoch format)
+            csi_data.insert(0, time.time())
+
+            # Đẩy dữ liệu hợp lệ vào queue, nhưng không để Reader bị treo nếu Writer chết hoặc Queue đầy
+            # Ta thử đẩy trong vòng 0.1s, nếu không được thì check stop_event rồi thử tiếp
+            success = False
+            while not stop_event.is_set():
+                try:
+                    data_queue.put(csi_data, timeout=0.1)
+                    success = True
+                    break
+                except queue.Full:
+                    continue
+            
+            if success:
+                stats['valid_count'] += 1  # CHỈ đếm packet HỢP LỆ, KHÔNG tính invalid
 
             # Kiểm tra max_count (chỉ dựa trên số packet HỢP LỆ)
             if max_count is not None and stats['valid_count'] >= max_count:
                 elapsed = time.time() - start_time
-                print(f'\n[READER] Reached VALID packet limit: {max_count} in {elapsed:.2f}s')
-                print(f'[READER] (Invalid packets encountered: {stats["invalid"]} - NOT counted toward limit)')
+                print_func(f'\n[READER] Reached VALID packet limit: {max_count} in {elapsed:.2f}s')
+                print_func(f'[READER] (Invalid packets encountered: {stats["invalid"]} - NOT counted toward limit)')
                 break
 
     except Exception as e:
-        print(f'[READER] Error: {e}')
+        print_func(f'[READER] Error: {e}')
     finally:
         stats['elapsed'] = time.time() - start_time
-        # Gửi sentinel để writer biết reader đã xong
-        data_queue.put(_SENTINEL)
-        print(f'[READER] Finished – valid packets: {stats["valid_count"]}, '
+        # Gửi sentinel để writer biết reader đã xong, dùng timeout để tránh treo nếu writer đã dừng
+        try:
+            if not data_queue.full():
+                data_queue.put(_SENTINEL, timeout=0.1)
+        except:
+            pass
+        print_func(f'[READER] Finished – valid packets: {stats["valid_count"]}, '
               f'invalid packets: {stats["invalid"]} (not counted), '
               f'elapsed: {stats["elapsed"]:.2f}s')
 
 
-def csv_writer_thread(data_queue, csv_writer, save_file_fd, stats):
+def csv_writer_thread(data_queue, csv_writer, save_file_fd, stats, print_func=print):
     """
     Writer thread: lấy parsed rows từ queue và ghi vào CSV.
     Tiếp tục chạy cho đến khi nhận sentinel (reader đã xong) VÀ queue rỗng.
@@ -171,43 +200,44 @@ def csv_writer_thread(data_queue, csv_writer, save_file_fd, stats):
             # Hiển thị tiến trình
             if written % 100 == 0:
                 pending = data_queue.qsize()
-                print(f'[WRITER] {written} rows written (queue: ~{pending} pending)')
+                print_func(f'[WRITER] {written} rows written (queue: ~{pending} pending)')
 
     except Exception as e:
-        print(f'[WRITER] Error: {e}')
+        print_func(f'[WRITER] Error: {e}')
     finally:
         save_file_fd.flush()
         stats['written'] = written
-        print(f'[WRITER] Finished – {written} rows written to CSV')
+        print_func(f'[WRITER] Finished – {written} rows written to CSV')
 
 
-def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, duration=None, max_count=None):
+def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, duration=None, max_count=None, stop_event=None, baudrate=2000000, print_func=print):
     """
     Khởi chạy 2 thread: reader (serial→queue) và writer (queue→CSV).
     """
-    ser = serial.Serial(port=port, baudrate=2000000, bytesize=8, parity='N', stopbits=1,
-                        timeout=1.0)  # timeout cho readline để reader thread có thể thoát
+    ser = serial.Serial(port=port, baudrate=baudrate, bytesize=8, parity='N', stopbits=1,
+                        timeout=0.1)  # timeout cho readline để reader thread có thể thoát
 
     if ser.isOpen():
-        print('[SUCCESS] Serial port opened successfully')
+        print_func('[SUCCESS] Serial port opened successfully')
     else:
-        print('[ERROR] Failed to open serial port')
+        print_func('[ERROR] Failed to open serial port')
         return
 
     data_queue = queue.Queue(maxsize=2000)
-    stop_event = threading.Event()
+    if stop_event is None:
+        stop_event = threading.Event()
     # valid_count: chỉ đếm packet HỢP LỆ (đã pass validation), KHÔNG tính invalid
     stats = {'valid_count': 0, 'invalid': 0, 'written': 0, 'elapsed': 0.0}
 
     reader = threading.Thread(
         target=serial_reader_thread,
-        args=(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event),
+        args=(ser, data_queue, log_file_fd, duration, max_count, stats, stop_event, print_func),
         name='csi-reader',
         daemon=True
     )
     writer = threading.Thread(
         target=csv_writer_thread,
-        args=(data_queue, csv_writer, save_file_fd, stats),
+        args=(data_queue, csv_writer, save_file_fd, stats, print_func),
         name='csi-writer',
         daemon=True
     )
@@ -215,22 +245,44 @@ def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, durati
     reader.start()
     writer.start()
 
+    def force_close_serial(s):
+        """Hàm này chạy trong luồng riêng để nếu driver treo cũng không làm đứng GUI"""
+        try:
+            if s and s.is_open:
+                if hasattr(s, 'cancel_read'): s.cancel_read()
+                s.close()
+        except:
+            pass
+
     try:
-        # Block main thread cho đến khi reader xong
-        reader.join()
-        # Đợi writer drain hết queue
-        writer.join(timeout=30)
-    except KeyboardInterrupt:
-        print(f'\n[INFO] Stopped by user')
-        stop_event.set()
-        reader.join(timeout=5)
-        # Gửi thêm sentinel phòng trường hợp reader chưa gửi
-        data_queue.put(_SENTINEL)
-        writer.join(timeout=30)
+        # Chờ reader xong HOẶC stop_event được set
+        # KHÔNG dùng join() vì join() có thể treo driver
+        while reader.is_alive():
+            if stop_event.is_set():
+                break
+            time.sleep(0.1)
+        
+        # Nếu dừng do stop_event, ta "vứt" việc đóng port cho một luồng riêng
+        # Luồng chính (GUI) sẽ đi tiếp ngay lập tức
+        closer_thread = threading.Thread(target=force_close_serial, args=(ser,), daemon=True)
+        closer_thread.start()
+
+        # Gửi tín hiệu dừng cho writer (không chờ)
+        try:
+            data_queue.put_nowait(_SENTINEL)
+        except:
+            pass
+
+        # Thoát ngay lập tức, không join() bất cứ thứ gì
+        print_func('[INFO] Session logic finished, returning control to GUI.')
+        
+    except Exception as e:
+        print_func(f'[ERROR] Critical error in session: {e}')
     finally:
-        ser.close()
-        print('[INFO] Serial port closed')
-        print(f'[STATS] Duration: {stats["elapsed"]:.2f}s | '
+        # Thống kê nhanh và thoát
+        print_func(f'[DONE] Packets logged: {stats["valid_count"]}')
+        
+        print_func(f'[STATS] Duration: {stats["elapsed"]:.2f}s | '
               f'Valid packets: {stats["valid_count"]} | '
               f'Written to CSV: {stats["written"]} | '
               f'Invalid (not counted): {stats["invalid"]} | '
@@ -348,7 +400,7 @@ Ví dụ sử dụng:
             log_file_fd = open(log_file_name, 'w')
 
         # Bắt đầu đọc và parse dữ liệu (multi-threaded)
-        csi_data_read_parse(serial_port, csv_writer, save_file_fd, log_file_fd, args.duration, args.max_count)
+        csi_data_read_parse(serial_port, csv_writer, save_file_fd, log_file_fd, args.duration, args.max_count, baudrate=2000000)
 
     except serial.SerialException as e:
         print(f'\n[ERROR] Serial error: {e}')
