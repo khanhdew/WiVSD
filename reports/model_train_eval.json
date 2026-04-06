@@ -1,0 +1,538 @@
+{
+  "n_samples": 96,
+  "n_features": 3,
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "model_path": "models/rf_person_detector.joblib",
+  "report": {
+    "0": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 11.0
+    },
+    "1": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 9.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    }
+  },
+  "sample_details": [
+    {
+      "path": "Router/csi_data_20260305_101104.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 28.008539516432176,
+        "amp_std": 9.348115657846598,
+        "amp_cv": 0.3337594826164429,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101201.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 30.57689820846049,
+        "amp_std": 11.47439590278086,
+        "amp_cv": 0.37526356743425154,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101244.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 28.771114899970843,
+        "amp_std": 9.788708179963997,
+        "amp_cv": 0.34022693294982176,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101328.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 30.04801505522513,
+        "amp_std": 10.767624678307797,
+        "amp_cv": 0.3583472871175691,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101412.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 28.546233567447267,
+        "amp_std": 9.904926360101001,
+        "amp_cv": 0.3469783968767108,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101456.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 28.971427088800418,
+        "amp_std": 10.025223512509609,
+        "amp_cv": 0.34603830462963603,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101539.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 27.817980717880417,
+        "amp_std": 9.122886536930444,
+        "amp_cv": 0.32794927243107097,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101622.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 27.530294588340784,
+        "amp_std": 9.002291785607943,
+        "amp_cv": 0.32699583931878656,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101705.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 28.5918145409008,
+        "amp_std": 9.168682569562275,
+        "amp_cv": 0.3206750853971303,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260305_101756.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 29.490041873435906,
+        "amp_std": 9.774214602103951,
+        "amp_cv": 0.3314411910316203,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_124024.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 86.70060970731005,
+        "amp_std": 17.72038897631712,
+        "amp_cv": 0.20438597878537237,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_124315.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 123.01919875123724,
+        "amp_std": 12.054408443949814,
+        "amp_cv": 0.09798802598548528,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_124605.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 118.04118125795301,
+        "amp_std": 12.6728167015616,
+        "amp_cv": 0.10735928399316802,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_124857.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 111.35722640913758,
+        "amp_std": 13.391893197391902,
+        "amp_cv": 0.12026065688982543,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_125149.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 96.3774107057076,
+        "amp_std": 19.85686900516488,
+        "amp_cv": 0.20603239763100348,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_125440.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 80.74569026007681,
+        "amp_std": 16.744522013590267,
+        "amp_cv": 0.20737356953240735,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_125728.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 99.32799727534544,
+        "amp_std": 20.32023593105304,
+        "amp_cv": 0.20457712315213267,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_130027.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 100.17004094187244,
+        "amp_std": 19.59445464496454,
+        "amp_cv": 0.19561192608811034,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_130320.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 131.57588229456215,
+        "amp_std": 13.283036992408853,
+        "amp_cv": 0.10095343280823907,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_130610.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 89.16972019838235,
+        "amp_std": 18.27030717399353,
+        "amp_cv": 0.20489362457733692,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_130858.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 88.34705263837404,
+        "amp_std": 17.576742904038376,
+        "amp_cv": 0.1989510954709973,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_131145.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 92.75141791704851,
+        "amp_std": 19.024387615360826,
+        "amp_cv": 0.20511155562468203,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_131443.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 80.51127537086046,
+        "amp_std": 15.117333565100294,
+        "amp_cv": 0.1877666636811436,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_131730.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 78.87428518658234,
+        "amp_std": 15.371457199251168,
+        "amp_cv": 0.19488553414955165,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_132016.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 97.66547736673648,
+        "amp_std": 19.545867109140705,
+        "amp_cv": 0.2001307691943741,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_132304.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 88.23550042523435,
+        "amp_std": 17.86883590514158,
+        "amp_cv": 0.20251300008529555,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_132554.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 86.28111635196967,
+        "amp_std": 16.601120036942415,
+        "amp_cv": 0.19240733939070592,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_132846.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 93.98363987472716,
+        "amp_std": 16.649457212503822,
+        "amp_cv": 0.1771527175867656,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_133135.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 83.12902257114685,
+        "amp_std": 16.294426951864175,
+        "amp_cv": 0.19601369591370352,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_133424.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 96.5910280159696,
+        "amp_std": 19.026582748164827,
+        "amp_cv": 0.19698084945342048,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_150409.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 43.16807104717367,
+        "amp_std": 9.407103253165863,
+        "amp_cv": 0.2179180821604437,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_150702.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 60.04056285387891,
+        "amp_std": 12.979374864431025,
+        "amp_cv": 0.21617676862921836,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_150953.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 46.62229799777781,
+        "amp_std": 10.733275175945883,
+        "amp_cv": 0.2302176348419692,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_151252.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 45.5878270541518,
+        "amp_std": 10.491221979748682,
+        "amp_cv": 0.23013209134286253,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_151544.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 55.34188330044842,
+        "amp_std": 12.273697229276705,
+        "amp_cv": 0.22177953653372062,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_151846.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 56.04091335434195,
+        "amp_std": 12.318146070040582,
+        "amp_cv": 0.2198063045859725,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_152143.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 50.33683710397896,
+        "amp_std": 12.220873470183353,
+        "amp_cv": 0.24278191029243937,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_152431.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 62.759945182849606,
+        "amp_std": 12.477085576015472,
+        "amp_cv": 0.19880650850895074,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_152718.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 41.538613669553136,
+        "amp_std": 9.59240297424187,
+        "amp_cv": 0.23092737399834995,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_153004.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 65.47085776309785,
+        "amp_std": 12.215205788439572,
+        "amp_cv": 0.18657470217725755,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_153251.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 58.10972544436633,
+        "amp_std": 13.280301993163,
+        "amp_cv": 0.2285383710146321,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_153539.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 58.53709230576178,
+        "amp_std": 13.383471598345007,
+        "amp_cv": 0.2286323264646966,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "Router/csi_data_20260313_153828.csv",
+      "label": 1,
+      "details": {
+        "amp_mean": 56.93638145842936,
+        "amp_std": 13.030738304072074,
+        "amp_cv": 0.22886488340651107,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260305_143420.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 10.650370775629034,
+        "amp_std": 0.9119368701497548,
+        "amp_cv": 0.08562489413387525,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260305_143618.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 9.292085973464697,
+        "amp_std": 0.15225367943562687,
+        "amp_cv": 0.01638530679445024,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260305_143656.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 9.596751138867326,
+        "amp_std": 0.5357035783381134,
+        "amp_cv": 0.05582134730664078,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260305_143745.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 9.278597694973316,
+        "amp_std": 0.16431361085740226,
+        "amp_cv": 0.017708884064067055,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260305_143835.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 9.128551110958842,
+        "amp_std": 0.15904985442763092,
+        "amp_cv": 0.01742334051640367,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260305_143916.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 9.186483210265052,
+        "amp_std": 0.1601635516511153,
+        "amp_cv": 0.017434697041861156,
+        "n_packets": 200
+      }
+    },
+    {
+      "path": "router no person/csi_data_20260313_112618.csv",
+      "label": 0,
+      "details": {
+        "amp_mean": 49.27469415643648,
+        "amp_std": 13.483936619058843,
+        "amp_cv": 0.27364830669978923,
+        "n_packets": 200
+      }
+    }
+  ]
+}
