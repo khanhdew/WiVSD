@@ -50,7 +50,7 @@ def find_candidate_csvs(root: Path) -> List[Path]:
     return [p for p in root.rglob('*.csv') if any(('router' in part.lower() or 'no person' in part.lower()) for part in p.parts)]
 
 
-def _process_npz_worker(npz_path_str: str, model_path_str: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def _process_npz_worker(npz_path_str: str, model_path_str: Optional[str] = None, threshold: float = 0.25) -> Optional[Dict[str, Any]]:
     npz_path = Path(npz_path_str)
     try:
         gt = infer_label_from_path(npz_path)
@@ -66,6 +66,18 @@ def _process_npz_worker(npz_path_str: str, model_path_str: Optional[str] = None)
                 if csvs:
                     # prefer first CSV found
                     pred, details = predict_with_model_from_csv(csvs[0], model_path=model_path_str)
+                    # If model returned probabilities, apply threshold to decide final prediction
+                    prob = None
+                    if isinstance(details, dict) and 'proba' in details:
+                        try:
+                            prob = float(details['proba'][0][1])
+                        except Exception:
+                            prob = None
+                    if prob is not None:
+                        final_pred = 1 if prob >= float(threshold) else 0
+                        details['used_threshold'] = float(threshold)
+                        details['proba_used'] = prob
+                        return {'path': str(npz_path), 'ground_truth': int(gt), 'prediction': int(final_pred), 'details': details}
                     return {'path': str(npz_path), 'ground_truth': int(gt), 'prediction': int(pred) if pred is not None else None, 'details': details}
             except Exception:
                 # fall back to NPZ-based prediction
@@ -77,7 +89,7 @@ def _process_npz_worker(npz_path_str: str, model_path_str: Optional[str] = None)
         return {'path': str(npz_path), 'ground_truth': None, 'prediction': None, 'error': str(e)}
 
 
-def _process_csv_worker(csv_path_str: str, model_path_str: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def _process_csv_worker(csv_path_str: str, model_path_str: Optional[str] = None, threshold: float = 0.25) -> Optional[Dict[str, Any]]:
     csv_path = Path(csv_path_str)
     try:
         gt = infer_label_from_path(csv_path)
@@ -90,6 +102,17 @@ def _process_csv_worker(csv_path_str: str, model_path_str: Optional[str] = None)
         if model_path_str:
             try:
                 pred, details = predict_with_model_from_csv(csv_path, model_path=model_path_str)
+                prob = None
+                if isinstance(details, dict) and 'proba' in details:
+                    try:
+                        prob = float(details['proba'][0][1])
+                    except Exception:
+                        prob = None
+                if prob is not None:
+                    final_pred = 1 if prob >= float(threshold) else 0
+                    details['used_threshold'] = float(threshold)
+                    details['proba_used'] = prob
+                    return {'path': str(csv_path), 'ground_truth': int(gt), 'prediction': int(final_pred), 'details': details}
                 return {'path': str(csv_path), 'ground_truth': int(gt), 'prediction': int(pred) if pred is not None else None, 'details': details}
             except Exception:
                 # fall back to preprocessing + NPZ prediction
@@ -110,7 +133,7 @@ def _process_csv_worker(csv_path_str: str, model_path_str: Optional[str] = None)
         return {'path': str(csv_path), 'ground_truth': None, 'prediction': None, 'error': str(e)}
 
 
-def evaluate(root: Path, save_json: Optional[Path] = None, jobs: Optional[int] = None, realtime: bool = True, model_path: Optional[str] = None, search_roots: Optional[List[Path]] = None, explicit_dirs: bool = False) -> Dict[str, Any]:
+def evaluate(root: Path, save_json: Optional[Path] = None, jobs: Optional[int] = None, realtime: bool = True, model_path: Optional[str] = None, search_roots: Optional[List[Path]] = None, explicit_dirs: bool = False, threshold: float = 0.25) -> Dict[str, Any]:
     root = Path(root)
     results: List[Dict[str, Any]] = []
 
@@ -181,9 +204,9 @@ def evaluate(root: Path, save_json: Optional[Path] = None, jobs: Optional[int] =
         futures = {}
         for kind, path in tasks:
             if kind == 'npz':
-                fut = exe.submit(_process_npz_worker, path, model_path_str=model_path)
+                fut = exe.submit(_process_npz_worker, path, model_path_str=model_path, threshold=threshold)
             else:
-                fut = exe.submit(_process_csv_worker, path, model_path_str=model_path)
+                fut = exe.submit(_process_csv_worker, path, model_path_str=model_path, threshold=threshold)
             futures[fut] = path
 
         completed = 0
@@ -253,12 +276,13 @@ def main():
     parser.add_argument('--model', '--model-path', '--model_path', dest='model_path', required=False, default=None, help='Optional path to trained joblib model to prefer model predictions')
     parser.add_argument('--dirs', '-d', nargs='+', type=Path, dest='dirs', required=False, default=None, help='Explicit list of directories to evaluate (skips global scanning).')
     parser.add_argument('--no-realtime', action='store_true', help='Disable realtime progress logging')
+    parser.add_argument('--threshold', type=float, default=0.25, help='Decision threshold for model probability to predict person (default: 0.25)')
     args = parser.parse_args()
     # If the caller specified explicit directories, forward them and set `explicit_dirs`.
     if args.dirs:
-        summary = evaluate(args.root, save_json=args.out, jobs=args.jobs, realtime=(not args.no_realtime), model_path=args.model_path, search_roots=args.dirs, explicit_dirs=True)
+        summary = evaluate(args.root, save_json=args.out, jobs=args.jobs, realtime=(not args.no_realtime), model_path=args.model_path, search_roots=args.dirs, explicit_dirs=True, threshold=args.threshold)
     else:
-        summary = evaluate(args.root, save_json=args.out, jobs=args.jobs, realtime=(not args.no_realtime), model_path=args.model_path)
+        summary = evaluate(args.root, save_json=args.out, jobs=args.jobs, realtime=(not args.no_realtime), model_path=args.model_path, threshold=args.threshold)
     # print(json.dumps(summary, indent=2))
 
 
