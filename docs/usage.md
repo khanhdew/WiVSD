@@ -68,7 +68,7 @@ pred, details = predict_from_csv_fast('router no person/csi_data_20260305_143420
 ```
 
 ## Huấn luyện model (nếu muốn tự train lại)
-Sử dụng script training đã cung cấp:
+Sử dụng script training đã cung cấp. Ví dụ mặc định (giả sử có thư mục `Router` và `router no person`):
 
 ```bash
 PYTHONPATH=src python scripts/train_ml_classifier.py --root . --limit 200 --model models/rf_person_detector.joblib --out reports/model_train_eval.json
@@ -77,23 +77,65 @@ PYTHONPATH=src python scripts/train_ml_classifier.py --root . --limit 200 --mode
 - Kết quả: mô hình lưu tại `models/rf_person_detector.joblib`, báo cáo tại `reports/model_train_eval.json`.
 - Kiến trúc hiện tại: `Pipeline(StandardScaler(), RandomForestClassifier(n_estimators=200))`, input là vector 3 chiều: `[amp_mean, amp_std, amp_cv]`.
 
+Tùy chọn mới (hữu ích để tránh data leakage / chỉ định holdout):
+
+- `--pos-train DIR [DIR ...]` : danh sách thư mục chứa mẫu dương (positive) để train (relative đến `--root` hoặc absolute).
+- `--neg-train DIR [DIR ...]` : danh sách thư mục chứa mẫu âm (negative) để train.
+- `--pos-test DIR [DIR ...]`  : (tuỳ chọn) danh sách thư mục chứa mẫu dương cho test (nếu cung cấp, script sẽ không chia random).
+- `--neg-test DIR [DIR ...]`  : (tuỳ chọn) danh sách thư mục chứa mẫu âm cho test.
+
+Ví dụ sử dụng explicit train/test (sử dụng thư mục `holdout` làm tập test):
+
+```bash
+PYTHONPATH=src python scripts/train_ml_classifier.py \
+	--root . \
+	--model models/rf_person_detector.joblib \
+	--out reports/model_train_retrained.json \
+	--pos-train Router \
+	--neg-train "router no person" \
+	--pos-test holdout/Router \
+	--neg-test "holdout/router no person"
+```
+
+Ghi chú: nếu không truyền `--pos-test`/`--neg-test`, script sẽ dùng `train_test_split(..., test_size=0.2, stratify=y)` để tách dữ liệu.
+
 ## Đánh giá / Tuning
-- Chạy evaluator toàn bộ dataset (module):
+
+- Chạy evaluator (duyệt dataset để sinh báo cáo):
 
 ```bash
 PYTHONPATH=src python -m csi_preprocessing.evaluate --root . --out reports/eval_summary.json
 ```
 
-- Chạy quick-eval trên CSVs:
+Các tuỳ chọn hữu dụng:
+
+- `--model`, `--model-path`, `--model_path MODEL`: đường dẫn tới joblib model được ưu tiên dùng để dự đoán. Nếu không truyền, evaluator sẽ cố tự động tìm `models/rf_person_detector.joblib` trong repo.
+- `--dirs`, `-d DIR [DIR ...]`: danh sách thư mục rõ ràng để đánh giá (bỏ qua tìm kiếm toàn cục). Khi dùng `--dirs`, chỉ tìm các CSV xuất (khớp `csi_data_*.csv` hoặc `csi_output.csv`) để tránh lấy file ví dụ/rác.
+- `--jobs`, `-j N`: số process worker (mặc định: auto).
+- `--no-realtime`: tắt logging tiến độ realtime.
+ - `--threshold T`: ngưỡng quyết định cho xác suất của mô hình để gán nhãn "có người" (mặc định `0.25`). Dùng khi bạn muốn áp một cutoff cố định cho `predict_proba(model)[:,1]`.
+
+Ví dụ:
+
+```bash
+# dùng model đã huấn luyện và 4 worker
+PYTHONPATH=src python -m csi_preprocessing.evaluate --root . --out reports/eval_summary.json --model models/rf_person_detector.joblib --jobs 4
+
+# đánh giá chỉ trên thư mục holdout (với ngưỡng 0.25)
+PYTHONPATH=src python -m csi_preprocessing.evaluate --root . --out reports/eval_holdout.json --model_path models/rf_person_detector_retrained.joblib --dirs holdout/Router "holdout/router no person" --jobs 4 --threshold 0.25
+```
+
+- Chạy quick-eval (nhanh) trên CSVs:
 
 ```bash
 PYTHONPATH=src python scripts/eval_fast.py --root . --limit 20 --out reports/eval_fast_summary.json
 ```
 
-- Tuning thresholds (dùng kết quả `eval_fast_summary.json`):
+- Tuning thresholds (tìm ngưỡng tốt nhất trên tập holdout):
 
 ```bash
-python3 scripts/tune_threshold.py --in reports/eval_fast_summary.json --out reports/threshold_tuning.json
+# Dùng threshold_sweep để quét ngưỡng (precision/recall/F1) trên holdout
+python3 scripts/threshold_sweep.py --model models/rf_person_detector_retrained.joblib --pos-dir holdout/Router --neg-dir "holdout/router no person" --out reports/threshold_sweep_holdout.json --plot reports/threshold_sweep_holdout.png
 ```
 
 ## Kiểm thử

@@ -1,6 +1,7 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,28 @@ from scipy.signal import spectrogram
 from csi_preprocessing.parse import load_csi_csv
 from csi_preprocessing.filters import apply_hampel, apply_savgol, elliptic_bandpass
 from csi_preprocessing.pca import pca_reduce, select_pca_components
+
+
+@dataclass
+class NoiseFilterConfig:
+    hampel_window_amp: int = 7
+    hampel_sigma_amp: float = 3.0
+    hampel_window_phs: int = 7
+    hampel_sigma_phs: float = 3.0
+    sg_window_amp: int = 11
+    sg_polyorder_amp: int = 2
+    sg_window_phs: int = 11
+    sg_polyorder_phs: int = 2
+    elliptic_low_amp: float = 0.15
+    elliptic_high_amp: float = 0.5
+    elliptic_order_amp: int = 4
+    elliptic_rp_amp: float = 0.1
+    elliptic_rs_amp: float = 40
+    elliptic_low_phs: float = 0.1
+    elliptic_high_phs: float = 0.6
+    elliptic_order_phs: int = 2
+    elliptic_rp_phs: float = 0.5
+    elliptic_rs_phs: float = 50
 
 
 def construct_matrix(ts_all, key: str) -> np.ndarray:
@@ -133,7 +156,10 @@ def save_dataset(output_dir: Path, cnn_input: np.ndarray, freq: np.ndarray, time
         json.dump(quality, fp, indent=2, ensure_ascii=False)
 
 
-def preprocess_csv_pipeline(csv_path: Path, output_dir: Path, fs: float = 100.0) -> Dict[str, Any]:
+def preprocess_csv_pipeline(csv_path: Path, output_dir: Path, fs: float = 100.0, config: Optional[NoiseFilterConfig] = None) -> Dict[str, Any]:
+    if config is None:
+        config = NoiseFilterConfig()
+
     df = load_csi_csv(csv_path)
 
     ts_all = {}
@@ -141,12 +167,12 @@ def preprocess_csv_pipeline(csv_path: Path, output_dir: Path, fs: float = 100.0)
         ts_all[idx] = pd.DataFrame({'amp': row['amplitude'], 'phase': row['phase']})
 
     for idx, df_sub in ts_all.items():
-        df_sub['amp_hampel'] = apply_hampel(df_sub['amp'].values, window_size=7, n_sigma=3.0)
-        df_sub['phase_hampel'] = apply_hampel(df_sub['phase'].values, window_size=7, n_sigma=3.0)
-        df_sub['amp_sg'] = apply_savgol(df_sub['amp_hampel'].values, window_length=11, polyorder=2)
-        df_sub['phase_sg'] = apply_savgol(df_sub['phase_hampel'].values, window_length=11, polyorder=2)
-        df_sub['amp_ellip'] = elliptic_bandpass(df_sub['amp_sg'].values, fs=fs, lowcut=0.15, highcut=0.5, order=4, rp=0.1, rs=40)
-        df_sub['phase_ellip'] = elliptic_bandpass(df_sub['phase_sg'].values, fs=fs, lowcut=0.1, highcut=0.6, order=2, rp=0.5, rs=50)
+        df_sub['amp_hampel'] = apply_hampel(df_sub['amp'].values, window_size=config.hampel_window_amp, n_sigma=config.hampel_sigma_amp)
+        df_sub['phase_hampel'] = apply_hampel(df_sub['phase'].values, window_size=config.hampel_window_phs, n_sigma=config.hampel_sigma_phs)
+        df_sub['amp_sg'] = apply_savgol(df_sub['amp_hampel'].values, window_length=config.sg_window_amp, polyorder=config.sg_polyorder_amp)
+        df_sub['phase_sg'] = apply_savgol(df_sub['phase_hampel'].values, window_length=config.sg_window_phs, polyorder=config.sg_polyorder_phs)
+        df_sub['amp_ellip'] = elliptic_bandpass(df_sub['amp_sg'].values, fs=fs, lowcut=config.elliptic_low_amp, highcut=config.elliptic_high_amp, order=config.elliptic_order_amp, rp=config.elliptic_rp_amp, rs=config.elliptic_rs_amp)
+        df_sub['phase_ellip'] = elliptic_bandpass(df_sub['phase_sg'].values, fs=fs, lowcut=config.elliptic_low_phs, highcut=config.elliptic_high_phs, order=config.elliptic_order_phs, rp=config.elliptic_rp_phs, rs=config.elliptic_rs_phs)
 
     amp_mat = construct_matrix(ts_all, 'amp_ellip')
     phase_mat = construct_matrix(ts_all, 'phase_ellip')
