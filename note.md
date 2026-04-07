@@ -1,0 +1,3 @@
+- Giải thích sóng có người.(dac trung cua bien do, pha)
+- Tìm hiểu về tự hồi quy, trung bình trượt.
+- Giai thích loại sóng sau các bộ lọc.
