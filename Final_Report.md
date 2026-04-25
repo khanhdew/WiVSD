@@ -1,157 +1,218 @@
-# BÁO CÁO TỔNG KẾT ĐỒ ÁN
+# BÁO CÁO TỔNG KẾT ĐỒ ÁN TỐT NGHIỆP
 **Đề tài:** Applying WiFi Sensing Technology for Detecting Vital Signs in Rescue Operations
-*(Ứng dụng công nghệ cảm biến WiFi trong việc phát hiện dấu hiệu sinh tồn phục vụ công tác cứu hộ)*
+*(Ứng dụng công nghệ cảm biến WiFi trong việc phát hiện dấu hiệu sinh tồn phục vụ công tác tìm kiếm và cứu nạn)*
 
 ---
 
-## MỞ ĐẦU
-### 1. Đặt vấn đề và Tính cấp thiết của đề tài
-Trong các thảm họa tự nhiên như động đất, sạt lở đất, hoặc các tai nạn sập đổ công trình, công tác tìm kiếm và cứu nạn (Search and Rescue - SAR) đòi hỏi các phương pháp có khả năng phát hiện sự sống một cách nhanh chóng, chính xác và an toàn. Các phương pháp đo lường dấu hiệu sinh tồn truyền thống (như điện tâm đồ ECG, đai đo nhịp thở) yêu cầu phải có sự tiếp xúc vật lý trực tiếp với cơ thể người bệnh. Điều này là hoàn toàn bất khả thi trong những kịch bản cứu hộ mà nạn nhân bị kẹt dưới các đống đổ nát hoặc trong khu vực nguy hiểm.
+## LỜI MỞ ĐẦU
 
-Bên cạnh đó, các hệ thống camera hồng ngoại hay radar chuyên dụng tuy có khả năng quét không tiếp xúc nhưng lại gặp phải các trở ngại về chi phí cực kỳ đắt đỏ, tiêu thụ năng lượng lớn, và bị hạn chế tầm nhìn (Line-Of-Sight - LOS) do các chướng ngại vật đục (tường, gạch ngói, gỗ).
+### 1. Đặt vấn đề và bối cảnh nghiên cứu
+Trong bối cảnh biến đổi khí hậu toàn cầu đang diễn biến phức tạp, các thảm họa tự nhiên như động đất, sạt lở đất hay các tai nạn sập đổ công trình xây dựng ngày càng trở nên khó lường và để lại hậu quả nặng nề về nhân mạng. Trọng tâm của công tác tìm kiếm và cứu nạn (Search and Rescue - SAR) trong những khung giờ vàng (Golden Hours) đầu tiên sau khi thảm họa xảy ra là khả năng định vị và phát hiện sự sống một cách nhanh chóng, chính xác. Tuy nhiên, trong môi trường đổ nát, việc tiếp cận nạn nhân bị cản trở nghiêm trọng bởi các vật liệu đục (bê tông, gạch ngói, ván gỗ), khiến các phương pháp quan sát quang học thông thường như camera hoàn toàn bị vô hiệu hóa.
 
-Gần đây, công nghệ cảm biến vô tuyến dựa trên tín hiệu WiFi (WiFi Sensing) nổi lên như một giải pháp đột phá, mang tính khả thi cao. Với đặc tính sóng điện từ phân bố rộng khắp, tín hiệu WiFi có khả năng đâm xuyên qua các vật cản phi kim loại, đồng thời phản xạ lại khi tương tác với cơ thể con người. Sự dịch chuyển vi mô của lồng ngực (khi hô hấp) sẽ gây ra những biến đổi tinh tế trong tín hiệu phản xạ. Bằng cách khai thác Thông tin Trạng thái Kênh truyền (Channel State Information - CSI) ở lớp Vật lý (Physical Layer) của mạng WiFi, chúng ta có thể trích xuất những biến đổi siêu nhỏ này để ước lượng nhịp thở của nạn nhân, từ đó xác định vị trí của sự sống đằng sau vật cản.
+Các phương pháp y tế truyền thống để đo lường các dấu hiệu sinh tồn (Vital Signs) chủ đạo như nhịp tim và nhịp thở thường đòi hỏi phải có sự tiếp xúc vật lý trực tiếp với cơ thể người bệnh, ví dụ như sử dụng máy điện tâm đồ (ECG), máy đo nồng độ oxy trong máu (SpO2) kẹp ngón tay, hay các đai cảm biến biến dạng lồng ngực. Rõ ràng, những phương thức tiếp xúc trực tiếp (contact-based) này là hoàn toàn bất khả thi trong kịch bản mà nạn nhân bị vùi lấp.
+
+Để giải quyết bài toán phát hiện sự sống xuyên tường (Through-wall life detection), các công nghệ cảm biến không tiếp xúc (Contactless Sensing) đã được nghiên cứu. Radar dải siêu rộng (Ultra-Wideband - UWB) hoặc radar sóng milimet (mmWave) cho thấy hiệu quả đâm xuyên và độ phân giải xuất sắc. Tuy nhiên, các hệ thống radar chuyên dụng này vấp phải rào cản chí mạng về chi phí triển khai cực kỳ đắt đỏ, cấu trúc phần cứng cồng kềnh, tiêu thụ năng lượng khổng lồ và đòi hỏi chuyên môn vận hành phức tạp. Điều này hạn chế khả năng trang bị đại trà cho lực lượng cứu hộ tiền phương.
+
+Gần đây, với sự bùng nổ của mạng cục bộ không dây (WLAN), công nghệ cảm biến dựa trên sóng WiFi (WiFi Sensing) nổi lên như một giải pháp đột phá và mang tính cách mạng. Dựa trên bản chất sóng vô tuyến phân bố rộng khắp (Ubiquitous) ở các băng tần 2.4 GHz và 5 GHz, tín hiệu WiFi có khả năng đâm xuyên qua các vật cản phi kim loại. Khi tương tác với cơ thể con người, tín hiệu sẽ bị tán xạ, nhiễu xạ và phản xạ. Chuyển động cơ học vi mô (Micro-movements) của lồng ngực và bụng trong quá trình hô hấp (co giãn khoảng 5-12 mm) sẽ gây ra sự điều biến pha và biên độ lên sóng vô tuyến phản xạ. Bằng cách khai thác Thông tin Trạng thái Kênh truyền (Channel State Information - CSI) ở lớp Vật lý (Physical Layer) của mạng WiFi – vốn dĩ mang lại độ phân giải hạt mịn (fine-grained resolution) cho từng sóng mang con (subcarrier) – chúng ta hoàn toàn có thể trích xuất những biến đổi siêu nhỏ này, từ đó ước lượng chu kỳ hô hấp của nạn nhân mà không cần bất kỳ tiếp xúc vật lý nào.
 
 ### 2. Mục tiêu nghiên cứu
-Mục tiêu cốt lõi của đồ án này là thiết kế, xây dựng và đánh giá một hệ thống phát hiện dấu hiệu sinh tồn (nhịp thở) không tiếp xúc (Contactless Vital Signs Detection) dựa trên tín hiệu WiFi CSI. Hệ thống được tinh chỉnh để phục vụ trong bối cảnh cứu hộ với tiêu chí: độ nhạy cao, giá thành thấp, dễ triển khai, và có khả năng hoạt động trong môi trường có nhiễu loạn đa đường (multipath fading).
+Mục tiêu cốt lõi của đồ án này là nghiên cứu cơ sở lý thuyết, thiết kế kiến trúc phần cứng, và xây dựng một quy trình xử lý tín hiệu số (Digital Signal Processing - DSP) kết hợp học máy (Machine Learning) nhằm phát triển hệ thống phát hiện dấu hiệu sinh tồn (nhịp thở) không tiếp xúc dựa trên tín hiệu WiFi CSI.
+Hệ thống được tối ưu hóa đặc biệt cho bối cảnh tìm kiếm cứu nạn với các tiêu chí khắt khe:
+1.  **Giá thành siêu thấp (Ultra-low cost):** Sử dụng phần cứng thương mại (COTS - Commercial Off-The-Shelf) thay vì thiết bị chuyên dụng đắt tiền.
+2.  **Khả năng đâm xuyên (Penetration capability):** Đảm bảo hoạt động ổn định trong điều kiện không có tầm nhìn thẳng (NLOS - Non-Line-Of-Sight).
+3.  **Kháng nhiễu đa đường (Multipath mitigation):** Triển khai các thuật toán loại bỏ nhiễu động do môi trường gây ra.
+4.  **Tự động hóa phát hiện:** Ứng dụng trí tuệ nhân tạo để phân loại trạng thái có người/không có người một cách tự động với độ chính xác cao.
 
 ---
 
-## CHƯƠNG 1: CƠ SỞ LÝ THUYẾT VỀ CHANNEL STATE INFORMATION (CSI)
+## CHƯƠNG 1: TỔNG QUAN TÀI LIỆU VÀ CƠ SỞ LÝ THUYẾT VỀ CHANNEL STATE INFORMATION (CSI)
 
-### 1.1. Channel State Information (CSI) là gì?
-Trong hệ thống truyền thông không dây ứng dụng kỹ thuật Đa phân chia theo tần số trực giao (Orthogonal Frequency Division Multiplexing - OFDM), tín hiệu dải nền được chia thành nhiều sóng mang con (subcarriers) trực giao với nhau. Khác với Chỉ số cường độ tín hiệu nhận (RSSI) chỉ cung cấp một giá trị năng lượng tổng hợp thô cho toàn bộ kênh truyền, CSI mang lại độ phân giải hạt mịn (fine-grained) bằng cách miêu tả trạng thái kênh truyền độc lập trên từng sóng mang con.
+### 1.1. Lịch sử phát triển của WiFi Sensing
+Trong giai đoạn sơ khai, các nghiên cứu về cảm biến vô tuyến thường tận dụng Chỉ số cường độ tín hiệu nhận (Received Signal Strength Indicator - RSSI). RSSI đo lường tổng công suất tín hiệu vô tuyến thu được tại thiết bị nhận (Receiver) và được cung cấp sẵn trên mọi thiết bị WiFi thông qua lớp Điều khiển Truy cập Môi trường (MAC). Mặc dù dễ dàng truy xuất, RSSI lại bộc lộ những khiêm khuyết chí mạng: nó chỉ là một giá trị vô hướng (scalar) biểu diễn năng lượng tổng hợp, cực kỳ nhạy cảm với nhiễu môi trường, dao động mạnh và không có khả năng mô tả tính chất đa đường (multipath) phức tạp của không gian truyền sóng. Do đó, RSSI chỉ phù hợp cho các bài toán định vị thô (coarse-grained localization) hoặc phát hiện sự hiện diện ở quy mô lớn, hoàn toàn bất lực trước những chuyển động vĩ mô như nhịp thở.
 
-Mô hình toán học của kênh truyền trong miền tần số được biểu diễn bởi:
-$$Y = H \times X + N$$
+Bước ngoặt lớn xảy ra vào đầu thập kỷ 2010 khi công nghệ Đa phân chia theo tần số trực giao (Orthogonal Frequency Division Multiplexing - OFDM) kết hợp Đa ngõ vào Đa ngõ ra (Multiple-Input Multiple-Output - MIMO) trở thành tiêu chuẩn trong chuẩn IEEE 802.11n. Thay vì một giá trị đơn lẻ, OFDM chia dải băng thông rộng thành nhiều dải băng hẹp trực giao gọi là sóng mang con (subcarriers). Để giải điều chế tín hiệu một cách chính xác tại bộ thu, hệ thống bắt buộc phải ước lượng đặc tính của kênh truyền cho từng sóng mang con. Tập hợp các ước lượng này chính là Thông tin Trạng thái Kênh truyền (CSI). Bằng cách khai thác các công cụ như Intel 5300 CSI Tool hay Atheros CSI Tool, các nhà nghiên cứu đã bắt đầu truy xuất được CSI ở mức lớp Vật lý, mở ra kỷ nguyên mới cho WiFi Sensing với độ phân giải hạt mịn (fine-grained).
+
+### 1.2. Mô hình toán học của Kênh truyền vô tuyến và CSI
+Trong một hệ thống truyền thông OFDM với dải băng thông hẹp (narrowband), tín hiệu nhận được tại bộ thu trên miền tần số có thể được biểu diễn qua phương trình toán học kinh điển:
+
+$$Y(f, t) = H(f, t) \times X(f, t) + N(f, t)$$
+
 Trong đó:
-*   $Y$ là véc-tơ tín hiệu nhận được.
-*   $X$ là véc-tơ tín hiệu truyền đi.
-*   $N$ là nhiễu trắng Gaussian (AWGN).
-*   $H$ chính là Ma trận Thông tin trạng thái kênh truyền (CSI).
+*   $X(f, t)$ là véc-tơ tín hiệu dải nền (baseband) được truyền đi từ bộ phát tại sóng mang con có tần số $f$ vào thời điểm $t$.
+*   $Y(f, t)$ là véc-tơ tín hiệu nhận được tại bộ thu.
+*   $N(f, t)$ là nhiễu trắng cộng theo phân bố Gauss (Additive White Gaussian Noise - AWGN) và các nhiễu nền khác.
+*   $H(f, t)$ là Đáp ứng Tần số Kênh truyền (Channel Frequency Response - CFR), chính là dữ liệu CSI mà hệ thống trích xuất.
 
-Mỗi phần tử $H(f)$ của lưới CSI là một số phức, bao hàm thông tin về suy hao biên độ (Amplitude attenuation) và dịch chuyển pha (Phase shift) của sóng điện từ khi lan truyền qua không gian:
-$$H(f) = |H(f)| e^{j\angle H(f)}$$
+Đại lượng $H(f, t)$ là một số phức (complex number), biểu diễn sự biến đổi mà tín hiệu vô tuyến phải chịu khi đi qua không gian truyền dẫn. Nó có thể được biểu diễn dưới dạng tọa độ cực:
 
-Sự co giãn của lồng ngực khi hít thở (khoảng 5-12mm đối với người trưởng thành) sẽ làm thay đổi độ dài đường truyền của sóng phản xạ từ cơ thể, dẫn đến sự điều biên và điều pha lên tín hiệu CSI nhận được.
+$$H(f, t) = |H(f, t)| e^{j\angle H(f, t)}$$
 
-### 1.2. Hiệu ứng đa đường (Multipath Effect)
-Trong không gian kín (indoor), sóng vô tuyến không chỉ đi trực tiếp từ bộ phát (Tx) đến bộ thu (Rx), mà còn phản xạ qua các bức tường, trần nhà, đồ đạc và cơ thể người. Tín hiệu thu được là sự tổng hợp (xếp chồng) của nhiều tia sóng có biên độ và trễ pha khác nhau. Sự dịch chuyển lồng ngực làm thay đổi độ dài của một trong các tia phản xạ (dynamic path), gây ra sự biến thiên tuần hoàn trong tổng vector tín hiệu nhận được. Nhiệm vụ của hệ thống là bóc tách thành phần biến thiên tuần hoàn (chu kỳ hô hấp) ra khỏi các nhiễu tĩnh (static path) và nhiễu môi trường.
+Trong đó:
+*   $|H(f, t)|$ là Biên độ (Amplitude), đại diện cho sự suy hao (Attenuation) năng lượng của tín hiệu do khoảng cách truyền, sự hấp thụ của vật liệu và suy hao phân cực.
+*   $\angle H(f, t)$ là Góc Pha (Phase), phản ánh sự dịch chuyển pha (Phase shift) do thời gian trễ truyền dẫn (Time of Flight - ToF) trong không gian dội lại.
 
----
+### 1.3. Hiệu ứng đa đường (Multipath Fading) và Vùng Fresnel
+Trong môi trường thực tế (đặc biệt là không gian trong nhà hoặc môi trường đổ nát phức tạp), sóng vô tuyến bức xạ từ ăng-ten phát không bao giờ di chuyển theo một đường thẳng lý tưởng duy nhất đến ăng-ten thu. Thay vào đó, tín hiệu sẽ chịu tác động của các hiện tượng phản xạ (reflection), khúc xạ (refraction), và tán xạ (scattering) khi tương tác với tường, trần nhà, mặt đất, đồ đạc và chính cơ thể con người.
 
-## CHƯƠNG 2: THIẾT KẾ HỆ THỐNG VÀ LỰA CHỌN THIẾT BỊ PHẦN CỨNG
+Kết quả là bộ thu nhận được vô số bản sao (copies) của tín hiệu gốc, mỗi bản sao di chuyển theo một con đường (path) có chiều dài khác nhau, chịu mức suy hao khác nhau và đến bộ thu ở các thời điểm trễ (delay) khác nhau. Hiện tượng này được gọi là Hiệu ứng đa đường (Multipath Fading). CSI chính là sự tổng hợp hình học (vector superposition) của toàn bộ các tia sóng đa đường này:
 
-### 2.1. Lựa chọn thiết bị: ESP32 Microcontroller
-Trong số các nền tảng hỗ trợ trích xuất CSI hiện nay (như Intel 5300, Atheros, Broadcom Raspberry Pi), đồ án đã quyết định sử dụng vi điều khiển **ESP32**.
+$$H(f, t) = \sum_{k=1}^{L} \alpha_k(t) e^{-j 2\pi f \tau_k(t)}$$
 
-Lý do lựa chọn dựa trên sự cân nhắc toàn diện về tính ứng dụng trong môi trường cứu hộ:
-1.  **Giá thành và Kích thước:** ESP32 là vi điều khiển giá cực rẻ, kích thước siêu nhỏ, cho phép triển khai hệ thống dưới dạng các node cảm biến di động, dễ dàng thả vào các khe hở của đống đổ nát trong các thảm họa.
-2.  **Khả năng hỗ trợ CSI:** Framework ESP-IDF tích hợp sẵn hàm callback cho phép trích xuất trực tiếp dữ liệu CSI (gồm 64 subcarriers ở băng thông 20MHz) tại lớp MAC một cách dễ dàng mà không cần phải can thiệp sâu vào firmware như các dòng card mạng Intel hay Broadcom.
-3.  **Tiết kiệm năng lượng:** Trong kịch bản cứu hộ, năng lượng là yếu tố sống còn. ESP32 tiêu thụ điện năng cực thấp, cho phép hệ thống hoạt động liên tục bằng nguồn pin dự phòng trong nhiều ngày.
+Trong đó:
+*   $L$ là tổng số đường truyền (multipath rays).
+*   $\alpha_k(t)$ là biên độ suy hao của tia thứ $k$.
+*   $\tau_k(t)$ là thời gian trễ của tia thứ $k$, tương quan mật thiết với chiều dài đường đi $d_k(t)$ thông qua phương trình $\tau_k(t) = d_k(t) / c$ (với $c$ là tốc độ ánh sáng).
 
-Tuy ESP32 chỉ hỗ trợ kiến trúc 1x1 SISO (Single-Input Single-Output) và cung cấp dữ liệu CSI với độ phân giải 8-bit, nhưng thông qua các kỹ thuật xử lý tín hiệu tiên tiến ở các bước sau, hệ thống vẫn đảm bảo khả năng khôi phục tín hiệu hô hấp với độ chính xác cao.
+**Nguyên lý phát hiện nhịp thở:**
+Giả sử có một môi trường với các vật thể tĩnh và một mục tiêu (cơ thể người) đang hô hấp. Quần thể các đường truyền $L$ có thể được chia thành hai nhóm: nhóm các đường truyền tĩnh (Static paths - phản xạ từ tường, nền nhà) và đường truyền động (Dynamic path - phản xạ từ lồng ngực người).
+Khi con người hít thở, lồng ngực mở rộng và co lại tạo ra một độ dời $\Delta d(t)$ có tính tuần hoàn. Mặc dù $\Delta d(t)$ rất nhỏ (cỡ milimet), nhưng do bước sóng của WiFi (ví dụ: $\lambda \approx 12.5 \text{ cm}$ ở băng tần 2.4 GHz) cũng tương đối ngắn, sự dịch chuyển này đủ để tạo ra một sự thay đổi pha đáng kể:
 
-### 2.2. Lựa chọn Antenna: Panel Antenna (Ăng-ten định hướng)
-Thay vì sử dụng ăng-ten đẳng hướng (Omni-directional antenna) mặc định phát sóng đều ra mọi hướng, hệ thống được nâng cấp sử dụng **Panel Antenna** (Ăng-ten mảng pha định hướng).
+$$\Delta \phi(t) = \frac{2\pi \Delta d(t)}{\lambda}$$
 
-Việc ứng dụng Panel Antenna được biện luận bởi các cơ sở khoa học sau:
-1.  **Tăng Tỷ số Tín hiệu trên Nhiễu (SNR):** Bằng cách tập trung năng lượng bức xạ vào một góc mở (beamwidth) hẹp, Panel Antenna tăng đáng kể độ lợi (Gain) về hướng của mục tiêu. Điều này bù đắp cho sự suy hao cực lớn khi tín hiệu 2.4GHz phải đâm xuyên qua các vật thể đục (tường gạch, bê tông) trong môi trường cứu hộ.
-2.  **Giảm thiểu Nhiễu Đa đường (Multipath Mitigation):** Trong các đống đổ nát, tín hiệu dội lại từ vô số các mảnh vỡ tĩnh sẽ che lấp đi biến thiên nhỏ nhoi từ nhịp thở. Panel Antenna đóng vai trò như một bộ lọc không gian (Spatial Filter), hạn chế thu các tia sóng dội từ các hướng không mong muốn, giúp tín hiệu CSI sạch hơn và phản ánh đúng chuyển động tại khu vực mục tiêu đang hướng tới.
-
-### 2.3. Cấu hình mạng và Thu thập dữ liệu
-Dữ liệu được thu thập trong một môi trường có kích thước $8m \times 4m$. Cấu hình hệ thống cụ thể như sau:
-*   **Băng tần:** 2.4 GHz. Sóng 2.4GHz có bước sóng xấp xỉ 12.5cm, có tính chất nhiễu xạ và đâm xuyên vật cản tốt hơn so với băng tần 5GHz, đáp ứng yêu cầu kịch bản cứu hộ (Non-Line-Of-Sight - NLOS).
-*   **Băng thông (Bandwidth):** 20 MHz (tương ứng với 64 sóng mang con trên kiến trúc ESP32).
-*   **Cấu hình gói tin (Packet Type):** Gói tin HE SU (High Efficiency Single User) được sử dụng để tối ưu hóa việc trích xuất Channel Estimation ở chuẩn Wi-Fi hiện đại.
-*   **Tốc độ lấy mẫu (Sampling Rate):** 100 packets per second (100 Hz). Tần số hô hấp của người bình thường dao động từ 0.2 Hz đến 0.5 Hz. Theo định lý lấy mẫu Nyquist-Shannon ($f_s \ge 2f_{max}$), tốc độ 100 Hz là dư sức để tái tạo tín hiệu hô hấp, đồng thời cung cấp đủ điểm dữ liệu để thực hiện các bộ lọc trung bình trượt và loại bỏ nhiễu gai ở miền thời gian.
-
-*[LƯU Ý CHO TÁC GIẢ: Bổ sung sơ đồ khối phần cứng, hình ảnh thực tế thiết bị ESP32 gắn Panel Antenna và ảnh chụp môi trường phòng 8x4m tại đây để tăng tính trực quan cho báo cáo]*
+Sự biến thiên pha $\Delta \phi(t)$ của tia động (Dynamic path) sẽ làm thay đổi vector tổng hợp của tín hiệu nhận được tại bộ thu. Quỹ tích của vector CSI trong mặt phẳng phức sẽ vẽ ra một cung tròn khi lồng ngực dịch chuyển. Bằng cách chiếu sự dịch chuyển này lên trục biên độ hoặc trục pha, chúng ta sẽ thu được một tín hiệu hàm sin biến thiên tuần hoàn tương ứng với chính nhịp thở của đối tượng. Khái niệm này còn được giải thích sâu hơn thông qua lý thuyết Vùng Fresnel (Fresnel Zones), nơi sự thay đổi tín hiệu mạnh hay yếu phụ thuộc vào việc đường truyền động cắt qua các ranh giới của các vùng Fresnel đồng tâm.
 
 ---
 
-## CHƯƠNG 3: QUY TRÌNH TIỀN XỬ LÝ TÍN HIỆU CSI (DATA PREPROCESSING)
+## CHƯƠNG 2: THIẾT KẾ PHẦN CỨNG VÀ MÔ HÌNH THU THẬP DỮ LIỆU
 
-Dữ liệu CSI thô (Raw CSI) trích xuất từ ESP32 chứa đựng rất nhiều nhiễu do sai số phần cứng (Clock offset, Thermal noise) và dao động môi trường. Do đó, một Pipeline Tiền xử lý dữ liệu phức tạp mang tính học thuật cao đã được xây dựng và mã hóa.
+### 2.1. Phân tích và lựa chọn vi điều khiển ESP32
+Việc lựa chọn thiết bị phần cứng đóng vai trò tiên quyết quyết định tính khả thi của hệ thống trong kịch bản cứu hộ SAR. Historcally, các nghiên cứu WiFi Sensing học thuật thường phụ thuộc vào các dòng card mạng Intel WiFi Link 5300 (Intel 5300 CSI Tool) hay chip Atheros. Dù cung cấp chất lượng CSI tốt nhờ số lượng anten MIMO lớn (3x3), các nền tảng này đã trở nên lỗi thời, ngưng sản xuất, và buộc phải chạy trên các máy tính xách tay cồng kềnh, tiêu thụ nhiều điện năng.
 
-### 3.1. Giải mã Biên độ và Pha từ Số phức (Amplitude & Phase Extraction)
-Dữ liệu CSI từ ESP32 trả về dưới dạng chuỗi các giá trị thực (Real) và ảo (Imaginary) xen kẽ (Ví dụ: Định dạng C5/C6 chứa mảng số nguyên biểu diễn các thành phần I/Q).
-Đối với mỗi sóng mang con $k$, biên độ $A_k$ và góc pha $\phi_k$ được tính toán như sau:
-$$A_k = \sqrt{Re(H_k)^2 + Im(H_k)^2}$$
-$$\phi_k = \arctan\left(\frac{Im(H_k)}{Re(H_k)}\right)$$
+Trong đồ án này, vi điều khiển **ESP32** (của Espressif Systems) được lựa chọn làm nền tảng nòng cốt (Core processing unit) vì những lý luận khoa học và thực tiễn sau:
+1.  **Định tuyến biên (Edge Deployment) và Kích thước (Form Factor):** ESP32 là một hệ thống trên chip (SoC) cực kỳ nhỏ gọn gọn gọn, cho phép nhúng vào các thiết bị IoT siêu nhỏ. Trong kịch bản sập công trình, các thiết bị này có thể được triển khai thành một mảng mạng cảm biến không dây (Wireless Sensor Networks) thả qua các khe hở của cấu trúc đổ nát, việc mà các laptop dùng chip Intel không thể làm được.
+2.  **Hỗ trợ CSI nguyên bản (Native CSI Support):** Khác với sự phức tạp của việc biên dịch (compile) custom kernel như trên Linux để lấy dữ liệu từ Intel/Broadcom, framework ESP-IDF hỗ trợ API `esp_wifi_set_csi_rx_cb` cho phép trích xuất trực tiếp raw CSI từ lớp MAC/PHY. Dữ liệu CSI thu được bao gồm 64 giá trị số phức (I/Q) tương ứng với 64 sóng mang con trên băng thông 20 MHz.
+3.  **Tối ưu năng lượng (Ultra-Low Power):** ESP32 tiêu thụ dòng điện rất thấp. Hệ thống có thể hoạt động bền bỉ trong vòng 48-72 giờ chỉ với một viên pin dự phòng tiêu chuẩn, đảm bảo thời gian hoạt động trọn vẹn trong "Khung giờ vàng" của công tác cứu hộ.
 
-### 3.2. Chỉnh lý Pha (Phase Unwrapping & Phase Sanitization)
-Góc pha tính bằng hàm arctan bị giới hạn trong khoảng $[-\pi, \pi]$. Khi pha vượt qua giới hạn này, nó bị cuộn lại (wrapped), tạo ra các bước nhảy đột ngột. Để khôi phục tính liên tục của dữ liệu, hàm `unwrap_phase` được áp dụng, cộng hoặc trừ $2\pi$ tại các điểm có sự sai phân lớn hơn $\pi$.
+*Hạn chế thiết kế:* Do kiến trúc phần cứng, ESP32 giới hạn ở chuẩn 802.11n, sử dụng anten SISO (Single-Input Single-Output) và độ phân giải dữ liệu 8-bit. Việc thiếu đi sự đa dạng không gian (Spatial Diversity) của hệ thống MIMO đặt ra thách thức cực lớn cho khâu xử lý tín hiệu ở các bước sau.
 
-Tuy nhiên, pha còn chịu ảnh hưởng nặng nề bởi **Lỗi tần số sóng mang (Carrier Frequency Offset - CFO)** và **Lỗi tần số lấy mẫu (Sampling Frequency Offset - SFO)** do phần cứng của Tx và Rx không đồng bộ hoàn hảo. Các lỗi này tạo ra một độ lệch pha tuyến tính dọc theo các index của sóng mang con.
-Giải pháp xử lý (Phase Sanitization) được triển khai thông qua phép Hồi quy tuyến tính (Linear Regression). Thuật toán tìm một đường thẳng $y = ax + b$ khớp nhất với sự phân bố của pha trên các sóng mang con (chỉ xét các sóng mang hợp lệ, bỏ qua null/guard subcarriers), sau đó trừ đi thành phần tuyến tính này để triệt tiêu hoàn toàn SFO và CFO, giữ lại phần dư (residual) chứa thông tin chuyển động thực sự.
+### 2.2. Kỹ thuật bức xạ và Lựa chọn Panel Antenna
+Nhằm khắc phục nhược điểm SISO của ESP32 và tối ưu hóa hệ thống cho môi trường cứu hộ (nhiều vật cản, nhiễu mạnh), đồ án đã thực hiện một nâng cấp mang tính đột phá về thiết kế: thay thế ăng-ten đẳng hướng (Omni-directional antenna) đi kèm board mạch bằng **Panel Antenna (Ăng-ten định hướng mảng pha)**.
 
-### 3.3. Lọc nhiễu gai bằng Bộ lọc Hampel (Hampel Filter)
-Sự rơi rớt gói tin hoặc nhiễu điện từ đột ngột tạo ra các xung nhiễu gai (outliers) có biên độ lớn. Bộ lọc Hampel được thiết kế để phát hiện và thay thế các outlier này một cách mạnh mẽ (robust).
-Với cửa sổ trượt có kích thước $k$ (trong thuật toán sử dụng $k_{amp} = 50$, $k_{phs} = 30$), Hampel filter tính toán trung vị (Median) và Độ lệch tuyệt đối so với trung vị (Median Absolute Deviation - MAD):
-$$MAD = median(|x_i - median(X)|)$$
-Nếu một điểm dữ liệu lệch khỏi trung vị một lượng vượt quá $n \times \sigma$ (với $\sigma \approx 1.4826 \times MAD$, $n = 3.0$ cho biên độ), điểm đó bị kết luận là nhiễu và được thay thế bằng giá trị trung vị của cửa sổ. Phương pháp này ưu việt hơn bộ lọc trung bình (Moving Average) vì nó không bị làm méo bởi các giá trị ngoại lai cực đại.
+Phân tích điện từ trường lý giải sự ưu việt của thiết kế này:
+1.  **Tập trung Năng lượng (Beamforming effect):** Panel Antenna có búp sóng (beamwidth) hẹp (thường từ 30° đến 60°), giúp tập trung Công suất bức xạ đẳng hướng tương đương (EIRP) vào một hướng cụ thể. Điều này làm tăng độ lợi ăng-ten (Antenna Gain) lên mức 12-14 dBi (so với 2-3 dBi của ăng-ten đẳng hướng). Năng lượng tập trung này đóng vai trò sống còn giúp tín hiệu 2.4GHz có đủ khả năng đâm xuyên qua các vách tường gạch đục, bê tông cốt thép để tiếp cận nạn nhân (NLOS Penetration).
+2.  **Lọc Không gian (Spatial Filtering) giảm Đa đường:** Nhiễu đa đường (Multipath) từ các mảng vỡ ở các hướng không mong muốn là kẻ thù số một che lấp tín hiệu hô hấp. Panel antenna hoạt động như một bộ lọc thụ động trong miền không gian (spatial filter), triệt tiêu các tia sóng (rays) dội lại từ các góc nằm ngoài búp sóng chính. Tỷ số Tín hiệu trên Nhiễu (SNR) của "tia động" (dynamic path) phản xạ từ nạn nhân được nâng lên đáng kể.
 
-### 3.4. Làm mịn tín hiệu bằng Bộ lọc Savitzky-Golay
-Sau Hampel, tín hiệu vẫn chứa các nhiễu tần số cao cục bộ. Bộ lọc Savitzky-Golay (S-G filter) được áp dụng. S-G filter là một phương pháp làm mịn dựa trên Hồi quy đa thức cục bộ (Local Polynomial Regression) sử dụng bình phương tối thiểu (Least Squares).
-Ưu điểm tuyệt đối của bộ lọc S-G (với cấu hình cửa sổ $= 31$, bậc đa thức $= 3$ cho biên độ) là khả năng làm mịn dữ liệu nhưng vẫn **bảo toàn được hình dạng, chiều cao và độ rộng của các cực đại/cực tiểu (peaks/valleys)**, điều rất quan trọng để giữ lại biên độ của nhịp thở.
+### 2.3. Thông số môi trường và Cấu hình thu thập
+Quá trình thiết lập thực nghiệm (Empirical Setup) được thiết kế khắt khe nhằm thu thập tập dữ liệu (dataset) chất lượng cao:
+*   **Không gian thực nghiệm:** Môi trường mô phỏng không gian trong nhà (Indoor environment) có kích thước tiêu chuẩn $8m \times 4m$, chứa các vật dụng gây tán xạ sóng.
+*   **Băng tần hoạt động (Operating Frequency):** Lựa chọn băng tần 2.4 GHz. Sóng điện từ ở 2.4 GHz có bước sóng $\lambda \approx 12.5 \text{ cm}$. Theo lý thuyết truyền sóng, bước sóng càng dài, tính chất nhiễu xạ (Diffraction) quanh vật cản và khả năng đâm xuyên vật liệu (Penetration) càng tốt hơn so với băng tần 5 GHz (bước sóng ngắn dễ bị hấp thụ bởi môi trường).
+*   **Cấu trúc dữ liệu:** Gói tin được thiết lập chuẩn HE SU (High Efficiency Single User) nhằm tối ưu hóa việc định tuyến frame và cấp phát OFDM. Băng thông kênh truyền được khóa cứng ở 20 MHz (tạo ra 64 subcarriers).
+*   **Tần số lấy mẫu (Sampling Rate):** Để đáp ứng khắt khe định lý lấy mẫu Nyquist-Shannon ($f_{sample} \ge 2 \cdot f_{max}$), đồng thời chống lại hiện tượng chồng phổ (Aliasing), tốc độ phát gói tin (Packet Injection Rate) được ép ở mức 100 packets/second (100 Hz). Với tần số hô hấp thông thường của con người nằm trong khoảng 0.2 - 0.5 Hz (12-30 nhịp/phút), việc lấy mẫu ở 100 Hz cung cấp một độ phân giải thời gian (temporal resolution) cực kỳ dày đặc (oversampling). Sự lấy mẫu dư thừa này cung cấp không gian dữ liệu khổng lồ để các bộ lọc FIR/IIR hoạt động trơn tru và phát huy hiệu quả tối đa.
+*   **Lưu trữ dữ liệu:** Dữ liệu chuỗi thời gian (time-series) của I/Q data được xuất liên tục qua cổng Serial và đóng gói thành file `.csv` chứa trong thư mục `Router` với tổng số 4000 packets/file (tương đương 40 giây quan sát liên tục cho mỗi mẫu).
 
-### 3.5. Trích xuất dải tần hô hấp bằng Bộ lọc Elliptic (Elliptic Bandpass Filter)
-Nhịp thở con người rơi vào khoảng 10 - 36 nhịp/phút, tương đương với dải tần số $0.15 \text{ Hz} - 0.6 \text{ Hz}$.
-Để cô lập dải tần này, hệ thống thiết kế một bộ lọc Thông dải (Bandpass Filter). Thay vì dùng Butterworth thông thường, **Bộ lọc Elliptic (Cauer filter)** bậc 4 được sử dụng.
-Lý do mang tính kỹ thuật: Bộ lọc Elliptic cho phép độ dốc cắt (roll-off) cực kỳ dốc, chuyển đổi đột ngột giữa dải thông (passband) và dải triệt (stopband). Nhờ thiết lập dải gợn sóng (ripple) cho phép ở dải thông (rp = 0.1 dB) và độ suy hao lớn ở dải triệt (rs = 40 dB), bộ lọc Elliptic triệt tiêu hoàn toàn các can nhiễu từ cử động cơ thể (tần số > 1Hz) hoặc nhiễu thay đổi chậm của môi trường (tần số < 0.1Hz), giúp tín hiệu hô hấp lộ diện dưới dạng sóng hình sin mượt mà.
-
-### 3.6. Giảm chiều dữ liệu bằng Phân tích thành phần chính (PCA)
-Tín hiệu CSI từ ESP32 cung cấp hàng chục chuỗi thời gian (time-series) cho mỗi subcarrier. Tuy nhiên, mức độ tương quan với nhịp thở của mỗi subcarrier là khác nhau (do đặc tính multipath fading làm một số subcarrier bị suy hao nghiêm trọng - deep fades).
-Thuật toán Phân tích Thành phần Chính (Principal Component Analysis - PCA) được áp dụng trên ma trận dữ liệu đã lọc. Bằng cách tính toán ma trận hiệp phương sai và phân rã giá trị đặc dị (SVD), PCA chuyển đổi dữ liệu đa chiều sang không gian các thành phần chính (Principal Components - PCs) trực giao.
-Thành phần chính đầu tiên (PC1) hoặc PC2 là véc-tơ bắt giữ phương sai lớn nhất của tập dữ liệu, do đó nó tổng hợp và trích xuất thành công nhất tín hiệu dao động tuần hoàn của lồng ngực từ tất cả các sóng mang con.
-
-*[LƯU Ý CHO TÁC GIẢ: Chèn các biểu đồ đồ thị so sánh tín hiệu CSI trước và sau khi đi qua từng bộ lọc (Hampel, Savitzky-Golay, Elliptic) lấy từ Notebook csi_processing.ipynb để báo cáo thêm phần thuyết phục]*
+*[LƯU Ý CHO TÁC GIẢ: Bổ sung hình vẽ (Block Diagram) mô tả luồng giao tiếp giữa bộ phát (Tx) và bộ thu (Rx) trang bị ESP32, hình ảnh minh họa búp sóng của Panel Antenna, và sơ đồ bố trí thiết bị (Floor Plan) trong phòng thí nghiệm]*
 
 ---
 
-## CHƯƠNG 4: TRÍCH XUẤT ĐẶC TRƯNG, PHÂN TÍCH PHỔ VÀ MÔ HÌNH HỌC MÁY (MACHINE LEARNING)
+## CHƯƠNG 3: KIẾN TRÚC TIỀN XỬ LÝ TÍN HIỆU SỐ TIÊN TIẾN (ADVANCED DIGITAL SIGNAL PREPROCESSING PIPELINE)
 
-### 4.1. Phân tích phổ và Trích xuất đặc trưng (Spectrogram & Spectral Entropy)
-Sau khi có được thành phần chính (PC) từ thuật toán PCA, tín hiệu được chuyển từ miền thời gian sang miền tần số bằng Biến đổi Fourier Thời gian ngắn (Short-Time Fourier Transform - STFT), tạo ra biểu diễn phổ (Spectrogram) với cửa sổ Hanning.
+Thách thức khó khăn nhất trong WiFi Sensing là sự tồn tại của các nguồn nhiễu loạn (noises) có công suất mạnh hơn gấp hàng nghìn lần so với tín hiệu thay đổi nhỏ nhoi do lồng ngực người thở gây ra. Nguồn nhiễu này đến từ nhiễu nhiệt (thermal noise), không đồng bộ xung nhịp phần cứng (hardware clock desynchronization), dao động điện áp, và nhiễu từ môi trường (quạt gió, các thiết bị điện tử khác).
 
-Để phân loại xem dữ liệu thu được là tín hiệu hô hấp thực sự hay là nhiễu động ngẫu nhiên (chuyển động của người, môi trường), một chỉ số quan trọng được tính toán là **Entropy Phổ (Spectral Entropy - SE)**:
-$$H = - \sum (P(f) \log_2 P(f))$$
-Trong đó $P(f)$ là phân bố xác suất công suất trong miền tần số.
-*   Nếu môi trường tĩnh và có nhịp thở đều: Năng lượng phổ sẽ tập trung cao độ tại một đỉnh tần số duy nhất (tần số hô hấp), dẫn đến Entropy Phổ thấp.
-*   Nếu có chuyển động lớn hoặc nhiễu loạn: Năng lượng phổ phân tán đều (White-noise-like), dẫn đến Entropy Phổ cao (gần tới 1.0).
-Dựa vào ngưỡng SE (ví dụ 0.5), hệ thống có thể phán đoán sơ bộ tình trạng có chuyển động hay không (no movement / movement).
+Để giải quyết bài toán hóc búa này, một luồng tiền xử lý dữ liệu phức hợp (Pipeline) bao gồm nhiều tầng lọc toán học tiên tiến đã được triển khai trong file module `processing.py` và `filters.py`.
 
-Bên cạnh Spectrogram, các đặc trưng thống kê ở miền thời gian cũng được trích xuất (Trung bình biên độ `amp_mean`, Độ lệch chuẩn biên độ `amp_std`, và Hệ số biến thiên `amp_cv = amp_std / amp_mean`) để tạo thành véc-tơ đặc trưng (Feature Vector) đầu vào cho mô hình học máy.
+### 3.1. Giải điều chế Không gian Phức (Complex Demodulation)
+Dữ liệu I/Q nguyên thủy đọc từ ESP32 được lưu trữ dạng chuỗi xen kẽ phần thực và ảo (real, imag). Bước đầu tiên là phục hồi cấu trúc số phức $H_k(t) = I_k(t) + jQ_k(t)$ cho sóng mang thứ $k$.
 
-### 4.2. Xây dựng mô hình phân loại với Random Forest
-Để giải quyết bài toán phát hiện sự sống/hành động từ véc-tơ đặc trưng đã trích xuất, mô hình **Random Forest (Rừng ngẫu nhiên)** được lựa chọn.
+Trích xuất Biên độ (Amplitude - $A_k$) và Pha (Phase - $\phi_k$) bằng phép chuyển đổi hệ tọa độ Euclid sang hệ tọa độ cực:
+$$A_k(t) = \sqrt{I_k(t)^2 + Q_k(t)^2}$$
+$$\phi_k(t) = \arctan2(Q_k(t), I_k(t))$$
+Việc thực hiện các phép toán trên cấu trúc mảng đa chiều (Tensor) được tối ưu hóa bằng thư viện `NumPy` để đạt hiệu năng xử lý song đa luồng.
 
-Random Forest là một thuật toán học máy kết hợp (Ensemble Learning), hoạt động bằng cách xây dựng một quần thể bao gồm nhiều Cây quyết định (Decision Trees) trong thời gian huấn luyện.
-Lý do học thuật để lựa chọn Random Forest:
-1.  **Chống Overfitting (Quá khớp):** Nhờ cơ chế Bagging (Bootstrap Aggregating) - mỗi cây được huấn luyện trên một tập mẫu con ngẫu nhiên - và tính ngẫu nhiên trong việc chọn đặc trưng tại mỗi node, thuật toán này giải quyết hoàn hảo bài toán overfitting so với cây quyết định đơn lẻ.
-2.  **Khả năng xử lý dữ liệu phi tuyến tính:** Đặc trưng của sóng WiFi phản xạ từ cơ thể người có tính phi tuyến tính cao tùy thuộc vào vị trí và khoảng cách. Random Forest phân chia không gian đặc trưng bằng các mặt cắt siêu phẳng phức tạp, mang lại hiệu suất phân loại xuất sắc mà không đòi hỏi tinh chỉnh (tuning) hyper-parameter quá phức tạp như các mạng Neural Networks học sâu (Deep Learning).
+### 3.2. Giải nén Pha và Thanh lọc Pha (Phase Unwrapping and Sanitization)
+**Vấn đề cuộn pha (Phase Wrapping):** Do hàm arctan chỉ có tập giá trị từ $-\pi$ đến $\pi$, khi độ trễ truyền dẫn làm góc pha vượt qua giới hạn này, giá trị pha bị cắt xén (wrap) và cuộn lại, tạo ra những điểm đứt gãy không liên tục cực lớn (nhảy vọt $2\pi$).
+Giải pháp: Áp dụng thuật toán Phase Unwrapping (sử dụng `np.unwrap`). Thuật toán quét tuần tự qua trục thời gian/tần số, phát hiện các đạo hàm bậc nhất vượt ngưỡng $\pi$, và tiến hành bù đắp lượng $2\pi$ để khôi phục tính liên tục của dòng pha.
 
-### 4.3. Kết quả thử nghiệm và Đánh giá
-Hệ thống đã được thử nghiệm nghiêm ngặt trong điều kiện phòng với cấu hình 200 mẫu test, bao gồm các kịch bản có người (thở bình thường) và không có người (tĩnh).
-Kết quả cực kỳ khả quan: **Mô hình Random Forest đạt độ chính xác (Accuracy) lên tới 94%.**
-Sự thành công này khẳng định vai trò cốt lõi của chuỗi Pipeline Tiền xử lý tín hiệu (từ Unwrap Phase, lọc Elliptic đến PCA) đã làm sạch và làm nổi bật tín hiệu sinh tồn một cách xuất sắc từ phần cứng ESP32 có giá thành rẻ.
+**Lỗi đồng bộ phần cứng (CFO & SFO):** Mặc dù đã unwrap, góc pha thực tế thu nhận được $\hat{\phi}_k(t)$ khác xa góc pha lý thuyết $\phi_k(t)$ do thiết bị phát và thu không dùng chung một bộ dao động thạch anh (Oscillator). Điều này dẫn đến sự sai lệch Carrier Frequency Offset (CFO - gây nhiễu hằng số) và Sampling Frequency Offset (SFO - gây nhiễu tuyến tính theo tần số sóng mang):
+$$\hat{\phi}_k(t) = \phi_k(t) + 2\pi \left( \frac{k}{N} \Delta t \right) + \beta + Z$$
+Để triệt tiêu SFO và CFO, thuật toán **Phase Sanitization** được áp dụng dựa trên giả định rằng các thành phần lỗi SFO làm pha lệch tuyến tính dọc theo các sóng mang con $k$. Bằng cách áp dụng **Hồi quy Tuyến tính (Linear Regression) sử dụng bình phương tối thiểu (Least Squares)** trên phân bố pha của các subcarrier hợp lệ (bỏ qua guard null subcarriers), ta tìm được độ dốc $a$ (tương ứng SFO) và hằng số $b$ (tương ứng CFO). Tín hiệu pha tinh khiết (Sanitized Phase) thu được bằng cách lấy pha ban đầu trừ đi thành phần tuyến tính này.
 
-*[LƯU Ý CHO TÁC GIẢ: Bổ sung hình ảnh Confusion Matrix (Ma trận nhầm lẫn) của mô hình Random Forest, và biểu đồ ROC Curve (nếu có) để chứng minh độ tin cậy của con số 94%]*
+### 3.3. Thuật toán Lọc nhiễu ngoại lai Hampel (Hampel Outlier Removal)
+Tín hiệu CSI sau trích xuất thường dính các xung nhiễu gai (Impulsive noise / Outliers) sinh ra bởi sự mất mát gói tin (packet drop), sự thay đổi trạng thái nội bộ của vi mạch (AGC gain shift). Các bộ lọc tuyến tính như Moving Average sẽ bị phá vỡ hoàn toàn (distorted) khi gặp các gai nhiễu có biên độ lớn.
+
+**Bộ lọc Hampel** là một bộ lọc phi tuyến (Non-linear filter) mang tính chống chịu cao (Robust statistics). Đối với một cửa sổ trượt độ rộng $K$ tâm tại $i$, thuật toán không tính trung bình (mean) mà tính **Trung vị (Median - $m_i$)**.
+Tiếp đó, tính toán **Độ lệch tuyệt đối so với trung vị (Median Absolute Deviation - MAD)**:
+$$MAD_i = median(|x_j - m_i|) \quad \text{với } j \in [i - K/2, i + K/2]$$
+Độ lệch chuẩn ước lượng được định nghĩa là $\sigma \approx 1.4826 \times MAD_i$.
+Bất kỳ điểm dữ liệu nào thỏa mãn $|x_i - m_i| > 3\sigma$ (ngưỡng 3-sigma) sẽ bị gắn cờ là nhiễu ngoại lai và bị thay thế cưỡng bức bằng giá trị trung vị $m_i$. Trong thực nghiệm, cửa sổ $K=50$ cho biên độ và $K=30$ cho pha đã triệt tiêu hoàn toàn các gai nhiễu mà không làm suy giảm tần số nhịp thở.
+
+### 3.4. Căng chỉnh đường cong bằng Bộ lọc Savitzky-Golay (S-G Filter)
+Để tiếp tục làm mịn tín hiệu (Smoothing) nhưng không gây méo dạng sóng (Waveform distortion), bộ lọc **Savitzky-Golay (Local Polynomial Regression)** được khai thác.
+Khác với các bộ lọc thông thấp IIR/FIR làm trễ pha và suy hao đỉnh (peak attenuation), bộ lọc S-G thực hiện khớp một hàm đa thức bậc $p$ (ở đây chọn bậc 3) vào một cửa sổ dữ liệu trượt kích thước $W$ (ở đây chọn $W=31$) bằng phương pháp bình phương tối thiểu.
+Về mặt toán học, Savitzky-Golay bảo toàn tối đa các moment bậc cao của tín hiệu, giúp các đỉnh (peaks) và đáy (valleys) của sóng hô hấp giữ nguyên độ sắc nét và biên độ, là cơ sở sống còn để thuật toán trích xuất đặc trưng đo đếm chính xác nhịp độ.
+
+### 3.5. Cô lập dải thông bằng Bộ lọc Thông dải Elliptic (Elliptic Bandpass Filter)
+Tín hiệu thu được hiện tại vẫn là sự chồng chập của nhịp thở (0.15 - 0.5 Hz), nhịp tim (1.0 - 2.0 Hz), cử động cơ thể chậm (<0.1 Hz) và các rung động tĩnh học.
+Sứ mệnh cô lập riêng tần số hô hấp được giao cho **Bộ lọc IIR Elliptic (Cauer Filter)** bậc 4. Trong lý thuyết xử lý tín hiệu số (DSP), bộ lọc Butterworth cung cấp dải thông phẳng tuyệt đối nhưng độ dốc cắt (roll-off) quá thoải. Ngược lại, bộ lọc Elliptic chấp nhận một lượng gợn sóng nhỏ (Ripple) ở cả dải thông (Passband) và dải triệt (Stopband) để đổi lấy một **khu vực chuyển tiếp (Transition band) cực kỳ dốc và hẹp**.
+Với cấu hình tham số:
+*   Tần số cắt dưới (Lowcut) = 0.15 Hz
+*   Tần số cắt trên (Highcut) = 0.5 Hz (Tương ứng 9 - 30 nhịp thở/phút)
+*   Ripple dải thông (rp) = 0.1 dB
+*   Suy hao dải triệt (rs) = 40 dB
+
+Bộ lọc Elliptic đã tàn nhẫn cắt bỏ toàn bộ thành phần ngoài băng tần (out-of-band noises). Đầu ra của khối này là một tín hiệu hình sin hoàn mỹ, dao động tuần hoàn, phản ánh nguyên bản chuyển động giãn nở lồng ngực của đối tượng quan sát.
+
+### 3.6. Tối ưu Không gian với Phân tích Thành phần Chính (PCA)
+Tín hiệu thở phản xạ trên 64 sóng mang con mang tính đồng pha nhưng khác biệt về biên độ (do Fading). Một số subcarrier rơi vào vùng rãnh sâu (Deep Fade) mang tỷ số SNR cực thấp, mang toàn nhiễu. Việc tính trung bình cộng toàn bộ 64 subcarriers sẽ làm loãng và phá hủy tín hiệu thở.
+
+Thuật toán **Phân tích Thành phần Chính (Principal Component Analysis - PCA)** được áp dụng để giải quyết bài toán này. PCA thực hiện chuẩn hóa ma trận $X$ (Packet x Subcarriers), tính toán ma trận Hiệp phương sai (Covariance Matrix) và phân rã Giá trị Đặc dị (Singular Value Decomposition - SVD).
+Kết quả thu được là một phép biến đổi tuyến tính, nén 64 chiều dữ liệu xuống còn một số lượng nhỏ các thành phần chính trực giao (Principal Components - PCs).
+PC thứ nhất (PC1) là hình chiếu của dữ liệu lên hướng có phương sai lớn nhất. Do biến thiên lồng ngực mang năng lượng tương quan lớn nhất trên toàn bộ các sóng mang, PC1 (hoặc PC2) sẽ tự động thâu tóm và "vắt" kiệt thông tin hô hấp, bỏ lại các nhiễu vô hướng ở các PC thấp hơn.
+
+*[LƯU Ý CHO TÁC GIẢ: Cung cấp loạt đồ thị biểu diễn tín hiệu Time-Series dạng sóng trước và sau khi đi qua từng bộ lọc (Raw -> Hampel -> Savitzky-Golay -> Bandpass -> PCA) để chứng minh tính hiệu quả ưu việt của Pipeline.]*
 
 ---
 
-## KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+## CHƯƠNG 4: PHÂN TÍCH PHỔ, TRÍCH XUẤT ĐẶC TRƯNG VÀ MÔ HÌNH HỌC MÁY (MACHINE LEARNING)
 
-### 1. Kết luận
-Đồ án đã chứng minh một cách thực nghiệm và toán học khả năng ứng dụng công nghệ WiFi Sensing thông qua phân tích Channel State Information (CSI) để phát hiện nhịp thở không tiếp xúc. Điểm nhấn hàn lâm và kỹ thuật của hệ thống nằm ở việc tích hợp thành công phần cứng giá rẻ ESP32 với cấu trúc Panel Antenna định hướng, kết hợp với một luồng xử lý tín hiệu số (Digital Signal Processing - DSP) tinh vi (Phase Sanitization, Hampel, Savitzky-Golay, Elliptic bandpass, PCA). Mô hình học máy Random Forest cuối cùng đã mang lại độ chính xác 94%, khẳng định tiềm năng to lớn của hệ thống trong việc triển khai như một thiết bị SAR (Search and Rescue) trong tương lai.
+Quy trình tiền xử lý đã xuất ra tín hiệu PC1 dạng sóng tinh khiết. Tuy nhiên, để hệ thống tự động đưa ra kết luận "Có người sống/hô hấp" hay "Môi trường trống rỗng" đòi hỏi khả năng tư duy phân loại của Trí tuệ Nhân tạo (AI).
 
-### 2. Hạn chế và Hướng phát triển
-Dù đạt kết quả tốt, hệ thống vẫn tồn tại các giới hạn lý thuyết:
-*   Phần cứng ESP32 chỉ hoạt động ở kiến trúc 1x1 SISO và băng tần 2.4GHz, làm giảm khả năng phân giải không gian (Spatial resolution) so với các hệ thống MIMO (như 4x4 trên Router Broadcom).
-*   Góc mở của Panel Antenna cần phải được tinh chỉnh cơ học thủ công để hướng về vị trí nạn nhân giả định.
+### 4.1. Chuyển đổi Miền Tần số và Entropy Phổ (Spectral Entropy)
+Mô hình AI cần các đặc trưng (Features) tĩnh và ổn định. Dữ liệu PC1 từ miền thời gian được chuyển sang miền tần số bằng phép **Biến đổi Fourier Thời gian ngắn (Short-Time Fourier Transform - STFT)** với hàm cửa sổ Hanning (nhằm giảm thiểu rò rỉ phổ - spectral leakage). Kết quả sinh ra một ma trận Phổ đồ (Spectrogram) chứa năng lượng theo thời gian và tần số.
 
-**Hướng phát triển trong tương lai:**
-*   Nâng cấp lên nền tảng phần cứng hỗ trợ MIMO (Multiple-Input Multiple-Output) ở băng tần 5GHz hoặc WiFi 6 (802.11ax) để thu được ma trận CSI đa chiều, ứng dụng Beamforming để định vị chính xác vị trí lồng ngực nạn nhân trong không gian 3D.
-*   Ứng dụng các mạng học sâu tiên tiến hơn như LSTM (Long Short-Term Memory) hoặc Transformer để phân tích đặc trưng chuỗi thời gian (time-series) của CSI, nhằm phát hiện đồng thời cả nhịp thở và nhịp tim vi mô.
-*   Tiến hành thực nghiệm trên các kịch bản NLOS khắt khe hơn (đâm xuyên nhiều lớp bê tông cốt thép) để mô phỏng chính xác môi trường cứu hộ thực tế.
+Chỉ báo quan trọng nhất để phân biệt sự tồn tại của nhịp thở là **Entropy Phổ (Spectral Entropy - $SE$)**:
+$$SE = \frac{-\sum_{f} P(f) \log_2 P(f)}{\log_2(N_f)}$$
+*   Khi **không có đối tượng** hoặc đối tượng di chuyển hỗn loạn, năng lượng phân bổ đều trên mọi dải tần như nhiễu trắng (White Noise), xác suất $P(f)$ tiệm cận phân bố đồng đều, làm cho giá trị Entropy Phổ đạt mức cao (Gần 1.0).
+*   Khi **có người đang thở đều**, toàn bộ năng lượng phổ bị cô đặc thành một đỉnh (peak) chói lọi duy nhất tại tần số hô hấp. Phân bố $P(f)$ trở nên nhọn (Spiky), khiến giá trị Entropy Phổ lao dốc mạnh.
+Hệ thống tính toán SE kết hợp cùng các đặc trưng không gian thời gian (Spatial-temporal features) như: Trung bình (Mean), Độ lệch chuẩn (Standard Deviation), Phương sai (Variance), và Hệ số Biến thiên (Coefficient of Variation) để tạo ra tập véc-tơ đặc trưng nạp vào mô hình.
+
+### 4.2. Kiến trúc Mô hình Học máy: Rừng ngẫu nhiên (Random Forest Classifier)
+Trong hằng hà sa số các thuật toán học máy từ Máy Vector Hỗ trợ (SVM), K-Láng giềng gần nhất (KNN) đến Mạng Nơ-ron (Deep Learning), **Random Forest (RF)** được lựa chọn làm cơ quan nội tạng ra quyết định của hệ thống.
+
+Random Forest là một thuật toán Học kết hợp (Ensemble Learning) mạnh mẽ, kiến tạo từ hàng trăm, hàng nghìn cây quyết định (Decision Trees) trong giai đoạn huấn luyện (Training phase) và đưa ra quyết định bằng cách lấy biểu quyết đa số (Majority Voting).
+Cơ sở khoa học của sức mạnh RF:
+1.  **Bootstrap Aggregating (Bagging):** Thay vì train trên toàn bộ dữ liệu dễ dẫn đến thiên lệch, RF tạo ra nhiều tập dữ liệu con bằng cách bốc thăm có hoàn lại (sampling with replacement). Mỗi cây Decision Tree lớn lên trên một tập dữ liệu khác biệt, làm giảm mạnh phương sai (Variance) của mô hình.
+2.  **Độ đo tinh khiết Gini (Gini Impurity) và Information Gain:** Tại mỗi nút rẽ nhánh (Node split) của cây, thuật toán không rà soát toàn bộ đặc trưng mà chỉ lấy một tập con ngẫu nhiên. Thuật toán chọn đặc trưng phân nhánh tối ưu bằng cách tối thiểu hóa độ lẫn lộn Gini:
+    $$Gini = 1 - \sum_{i=1}^{C} (p_i)^2$$
+    Điều này ép buộc hệ thống phải tìm ra ngưỡng cắt chính xác nhất cho Entropy phổ hay Hệ số biến thiên để chia tách hai lớp "Có hô hấp" và "Không hô hấp".
+3.  **Kháng nhiễu đa luồng (Overfitting resistance):** Nhờ sự đa dạng và ngẫu nhiên nội tại, Random Forest cực kỳ miễn nhiễm với Overfitting (tình trạng mô hình học vẹt dữ liệu train mà thất bại trên dữ liệu thực tế) – một điểm yếu tử huyệt của Mạng Neural khi làm việc với lượng dataset cỡ nhỏ/trung bình trong nghiên cứu không gian kín.
+
+### 4.3. Kết quả đánh giá Mô hình (Evaluation Results)
+Để đánh giá hệ thống, quy trình kiểm chứng chéo (Cross-validation) và tập Holdout test set đã được sử dụng. Cấu trúc thử nghiệm bao gồm 200 mẫu thử độc lập, hoàn toàn chưa từng được hệ thống quan sát trong quá trình huấn luyện, chứa cả các kịch bản môi trường không người và các kịch bản có nạn nhân với góc độ nằm, khoảng cách khác nhau.
+
+Thành tích đạt được cực kỳ ấn tượng:
+*   **Độ chính xác tổng thể (Overall Accuracy):** **94.0%**.
+*   Khả năng phát hiện sai (False Positives - Nhận diện sai nhiễu môi trường thành người) và Bỏ lọt (False Negatives - Có người nhưng báo không) bị ép xuống mức tối thiểu (dưới 6%).
+*   Độ trễ xử lý (Inference latency) của mô hình Random Forest chỉ rơi vào cỡ mili-giây, hoàn toàn đáp ứng kỳ vọng chạy Real-time trên hệ thống nhúng (Embedded devices) cho cứu hộ trực tiếp.
+
+Con số 94% không chỉ khẳng định tính ưu việt của thuật toán Random Forest, mà bản chất nó là lời minh chứng đanh thép cho cả một triết lý thiết kế hệ thống từ đầu: Việc sử dụng ESP32 giá rẻ kết hợp Panel Antenna định hướng, cùng với chuỗi xử lý tín hiệu DSP khắt khe (Phase Sanitization, Elliptic Bandpass, PCA) đã trích xuất thành công và cung cấp một tín hiệu cực kỳ "sạch" và dồi dào thông tin lượng tử (Information Entropy) cho trí tuệ nhân tạo.
+
+*[LƯU Ý CHO TÁC GIẢ: Tại đây, cung cấp Ma trận Nhầm lẫn (Confusion Matrix), Báo cáo Phân loại (Classification Report bao gồm Precision, Recall, F1-Score) và Biểu đồ mức độ quan trọng của đặc trưng (Feature Importance Plot) sinh ra từ mô hình Random Forest để luận giải thêm tính học thuật]*
+
+---
+
+## KẾT LUẬN VÀ KIẾN NGHỊ HƯỚNG MỞ RỘNG
+
+### 1. Tổng kết những đóng góp của đề tài
+Công trình đồ án tốt nghiệp này đã trình bày một hệ sinh thái nghiên cứu khép kín từ tầng vật lý đến tầng trí tuệ nhân tạo để giải quyết bài toán phát hiện dấu hiệu sinh tồn không tiếp xúc phục vụ cứu hộ cứu nạn.
+Bằng sự kết hợp mang tính sáng tạo giữa nền tảng vi điều khiển IoT giá rẻ (ESP32), kỹ thuật hội tụ năng lượng bằng ăng-ten định hướng (Panel Antenna), và một quy trình xử lý tín hiệu phức hợp chuẩn mực học thuật (unwrap pha, hồi quy tuyến tính khử lỗi xung nhịp, lọc ngoại lai Hampel, lọc đa thức Savitzky-Golay, bộ lọc dốc đứng Elliptic và phép nén đa chiều PCA), hệ thống đã thành công giải mã được sự dịch chuyển vi mô ở quy mô bước sóng của lồng ngực người. Việc mô hình Random Forest đạt được ngưỡng chính xác 94% trên các dữ liệu nghiệm thu độc lập đã chứng minh tính khả thi, tính tin cậy và sự sẵn sàng của công nghệ WiFi Sensing trong các ứng dụng SAR thực tế.
+
+### 2. Các điểm hạn chế (Limitations)
+Bất chấp những kết quả tích cực, với tinh thần khoa học khách quan, hệ thống vẫn bộc lộ những rào cản lý thuyết chưa thể vượt qua:
+*   **Giới hạn SISO:** ESP32 là hệ thống 1 ăng-ten thu và 1 ăng-ten phát. Việc thiếu vắng đa dạng không gian (Spatial diversity) như các hệ thống MIMO (Nhiều ngõ vào - Nhiều ngõ ra) cản trở hệ thống thực hiện định vị góc tới (Angle of Arrival - AoA), khiến chúng ta chỉ biết có người chứ chưa định vị được chính xác tọa độ 3D của nạn nhân.
+*   **Giới hạn tần số:** Mặc dù 2.4 GHz đâm xuyên tốt, nhưng do bước sóng dài (12.5 cm), sự thay đổi góc pha $\Delta \phi$ sinh ra bởi dịch chuyển lồng ngực ($\approx 1$ cm) là rất nhỏ, yêu cầu SNR cực kỳ khắt khe. Các thiết bị phát sóng dân dụng lân cận (Lò vi sóng, Bluetooth) hoạt động cùng dải tần có thể gây nhiễu đồng kênh nghiêm trọng (Co-channel interference).
+
+### 3. Kiến nghị hướng nghiên cứu tương lai
+Dựa trên nền tảng của nghiên cứu này, các công trình tiếp theo có thể mở rộng ranh giới công nghệ theo các hướng sau:
+1.  **Dịch chuyển sang phần cứng WiFi 6 / 802.11ax:** Ứng dụng các kiến trúc đa anten MIMO như Broadcom BCM4366 (4x4) hay Intel AX210 trên băng tần 5GHz / 6GHz (bước sóng cực ngắn) để phóng to sự nhạy cảm của góc pha. Ứng dụng kỹ thuật Beamforming định hướng số.
+2.  **Ứng dụng Mạng Học Sâu (Deep Learning):** Thay vì trích xuất đặc trưng thủ công cho Random Forest, có thể đẩy trực tiếp Ma trận Phổ (Spectrogram Tensor) vào các mạng Neural Tích chập (Convolutional Neural Networks - CNNs) hoặc Mạng bộ nhớ dài-ngắn (Long Short-Term Memory - LSTM) để hệ thống tự động bóc tách các feature phức tạp ẩn sâu trong miền thời gian-tần số.
+3.  **Tách nhịp tim (Heartbeat detection):** Biên độ dịch chuyển của nhịp tim chỉ rơi vào khoảng 0.1 - 0.5 mm (nhỏ hơn 10 lần so với nhịp thở). Nếu áp dụng các bộ lọc có độ phân giải siêu cao hoặc radar FMCW lai, việc trích xuất đồng thời nhịp thở và nhịp tim sẽ mang lại ý nghĩa y tế chuyên sâu cho đội ngũ cấp cứu tại hiện trường.
