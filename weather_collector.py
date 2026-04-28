@@ -57,6 +57,7 @@ def collect_loop(
     stop_event=None,
     scenarios: Optional[list[str]] = None,
     udp_port: Optional[int] = None,
+    update_callback=None,
 ) -> None:
     """Vòng lặp thu thập dữ liệu UDP và weather, ghi ra CSV."""
     if csv_file is None:
@@ -120,16 +121,22 @@ def collect_loop(
         with open(csv_file, mode="a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(row)
+        # notify callback (e.g., GUI) with latest weather row
+        if update_callback:
+            try:
+                update_callback(now, temp_in, humi_in, temp_out, humi_out, scenarios[:5])
+            except Exception:
+                pass
 
-        print("\n===== DỮ LIỆU =====")
-        print(f"Time       : {now}")
-        print(f"Trong nhà  : {temp_in} °C | {humi_in} %")
-        if temp_out is not None:
-            print(f"Ngoài trời : {temp_out} °C | {humi_out} %")
-        else:
-            print("Ngoài trời : Không có dữ liệu")
-        if scenarios:
-            print("Scenario   :", scenarios)
+        # print("\n===== DỮ LIỆU =====")
+        # print(f"Time       : {now}")
+        # print(f"Trong nhà  : {temp_in} °C | {humi_in} %")
+        # if temp_out is not None:
+        #     print(f"Ngoài trời : {temp_out} °C | {humi_out} %")
+        # else:
+        #     print("Ngoài trời : Không có dữ liệu")
+        # if scenarios:
+        #     print("Scenario   :", scenarios)
 
     sock.close()
 

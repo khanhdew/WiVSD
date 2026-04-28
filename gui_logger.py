@@ -20,6 +20,9 @@ class CSILoggerGUI:
         self.stop_event = threading.Event()
         self.is_running = False
         self.weather_thread = None
+        # In-memory weather data for fast/online merging
+        self.weather_data_lock = threading.Lock()
+        self.weather_data = {}
         
         self.create_widgets()
         self.refresh_ports()
@@ -101,6 +104,28 @@ class CSILoggerGUI:
         ttk.Entry(weather_group, textvariable=self.udp_port_var, width=10).grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
         ttk.Label(weather_group, text="(UDP messages: temp_in,humi_in)").grid(row=2, column=2, sticky=tk.W)
 
+        # Scenarios
+        scenario_group = ttk.LabelFrame(main_frame, text="Scenario Information", padding="10")
+        scenario_group.pack(fill=tk.X, pady=5)
+
+        ttk.Label(scenario_group, text="Scene 1 - Number of People:").grid(row=0, column=0, sticky=tk.W)
+        self.scenario_1_var = tk.StringVar(value="")
+        ttk.Entry(scenario_group, textvariable=self.scenario_1_var, width=15).grid(row=0, column=1, padx=5, sticky=tk.W)
+
+        ttk.Label(scenario_group, text="Scene 2 - Action:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.scenario_2_var = tk.StringVar(value="")
+        scenario_2_combo = ttk.Combobox(scenario_group, textvariable=self.scenario_2_var, 
+                                        values=["ngồi yên", "đi lại", "vẫy tay", "ngồi nhìn", "nằm"], 
+                                        width=13)
+        scenario_2_combo.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+
+        ttk.Label(scenario_group, text="Scene 3 - Environment:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.scenario_3_var = tk.StringVar(value="")
+        scenario_3_combo = ttk.Combobox(scenario_group, textvariable=self.scenario_3_var, 
+                                        values=["tĩnh lặng", "quạt", "điều hòa", "TV", "nhạc"], 
+                                        width=13)
+        scenario_3_combo.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+
         # Controls (Moved up for visibility)
         control_frame = ttk.Frame(main_frame, padding="10")
         control_frame.pack(fill=tk.X, pady=5)
@@ -168,6 +193,10 @@ class CSILoggerGUI:
             interval = self.interval_var.get()
             weather_interval = int(self.weather_interval_var.get())
             udp_port = int(self.udp_port_var.get())
+            # Scenarios
+            scenario_1 = self.scenario_1_var.get()
+            scenario_2 = self.scenario_2_var.get()
+            scenario_3 = self.scenario_3_var.get()
         except ValueError:
             messagebox.showerror("Error", "Check your parameter formats (numbers needed).")
             return
@@ -178,10 +207,10 @@ class CSILoggerGUI:
         self.stop_btn.config(state=tk.NORMAL)
 
         # Run scheduler in a separate thread
-        t = threading.Thread(target=self.logging_scheduler, args=(port, baudrate, duration, max_count, delay, interval, weather_interval, udp_port), daemon=True)
+        t = threading.Thread(target=self.logging_scheduler, args=(port, baudrate, duration, max_count, delay, interval, weather_interval, udp_port, scenario_1, scenario_2, scenario_3), daemon=True)
         t.start()
 
-    def logging_scheduler(self, port, baudrate, duration, max_count, delay, interval, weather_interval, udp_port):
+    def logging_scheduler(self, port, baudrate, duration, max_count, delay, interval, weather_interval, udp_port, scenario_1, scenario_2, scenario_3):
         try:
             if delay > 0:
                 self.log(f"Delaying start for {delay} minutes...")
@@ -215,7 +244,7 @@ class CSILoggerGUI:
 
                 # Thêm log để biết đang ở bước nào
                 self.log(f"DEBUG: Starting session core logic...")
-                self.run_one_session(port, baudrate, duration, max_count, weather_interval, udp_port)
+                self.run_one_session(port, baudrate, duration, max_count, weather_interval, udp_port, scenario_1, scenario_2, scenario_3)
                 self.log(f"DEBUG: Session core logic returned.")
                 
                 first_run = False
@@ -233,21 +262,24 @@ class CSILoggerGUI:
             self.root.after(0, lambda: self.stop_btn.config(state=tk.DISABLED))
             self.log("FINISH: Logging system is now idle.")
 
-    def run_one_session(self, port, baudrate, duration, max_count, weather_interval, udp_port):
+    def run_one_session(self, port, baudrate, duration, max_count, weather_interval, udp_port, scenario_1, scenario_2, scenario_3):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         csi_file_path = os.path.join(self.dir_var.get(), f"csi_data_{timestamp}.csv")
         weather_file_path = os.path.join(self.dir_var.get(), f".weather_tmp_{timestamp}.csv")  # Temp file
         
         self.log(f"Starting session: {csi_file_path}")
+        self.log(f"Scenarios - People: {scenario_1}, Action: {scenario_2}, Environment: {scenario_3}")
         
         # Start weather collector thread if enabled
         weather_thread = None
         if self.weather_enabled.get():
             self.log(f"Starting weather collector (background)...")
             try:
+                # Build scenarios list for weather collector
+                scenarios = [scenario_1, scenario_2, scenario_3, "", ""]
                 weather_thread = threading.Thread(
                     target=self._run_weather_collector,
-                    args=(weather_file_path, weather_interval, udp_port),
+                    args=(weather_file_path, weather_interval, udp_port, scenarios),
                     daemon=True
                 )
                 weather_thread.start()
@@ -255,10 +287,12 @@ class CSILoggerGUI:
                 self.log(f"WARNING: Failed to start weather collector: {e}")
         
         try:
+            # Time the CSI collection (exclude merge time)
+            start_collect = time.time()
             with open(csi_file_path, 'w', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(DATA_COLUMNS_NAMES)
-                
+
                 # Execute core logic from serial_to_csv with GUI logger
                 csi_data_read_parse(
                     port=port,
@@ -270,7 +304,10 @@ class CSILoggerGUI:
                     baudrate=baudrate,
                     print_func=self.log
                 )
+            end_collect = time.time()
+            collect_seconds = end_collect - start_collect
             self.log(f"SUCCESS: CSI data collected. Saved to: {csi_file_path}")
+            self.log(f"STAT: CSI collection time (s): {collect_seconds:.3f}")
         except Exception as e:
             self.log(f"ERROR: CSI session failed: {e}")
             import traceback
@@ -299,17 +336,20 @@ class CSILoggerGUI:
             
             self.log(f"DEBUG: run_one_session for {timestamp} clean exit.")
 
-    def _run_weather_collector(self, weather_file_path, interval, udp_port):
+    def _run_weather_collector(self, weather_file_path, interval, udp_port, scenarios=None):
         """Run weather collector in a separate thread."""
         try:
-            self.log(f"DEBUG: Weather collector starting on port {udp_port}...")
-            
+            if scenarios is None:
+                scenarios = []
+            self.log(f"DEBUG: Weather collector starting on port {udp_port} with scenarios: {scenarios}...")
+            # Pass an update_callback so we receive each weather row as it's written
             collect_loop(
                 csv_file=weather_file_path,
                 interval=interval,
                 stop_event=self.stop_event,
-                scenarios=[],
-                udp_port=udp_port
+                scenarios=scenarios,
+                udp_port=udp_port,
+                update_callback=self._weather_update_callback
             )
             
             self.log("DEBUG: Weather collector finished")
@@ -318,80 +358,125 @@ class CSILoggerGUI:
             import traceback
             traceback.print_exc()
 
+    def _weather_update_callback(self, now, temp_in, humi_in, temp_out, humi_out, scenarios=None):
+        """Callback invoked by weather_collector.collect_loop for each written row.
+        Stores latest weather row indexed by integer-second timestamp for fast merging.
+        """
+        try:
+            ts = int(now)
+        except Exception:
+            try:
+                ts = int(float(now))
+            except Exception:
+                return
+
+        if scenarios is None:
+            scenarios = [''] * 5
+        else:
+            # ensure list of length 5
+            scenarios = list(scenarios)
+            if len(scenarios) < 5:
+                scenarios += [''] * (5 - len(scenarios))
+
+        with self.weather_data_lock:
+            self.weather_data[ts] = {
+                'temp_in': str(temp_in) if temp_in is not None else '',
+                'humi_in': str(humi_in) if humi_in is not None else '',
+                'temp_out': str(temp_out) if temp_out is not None else '',
+                'humi_out': str(humi_out) if humi_out is not None else '',
+                'scenarios': scenarios[:5]
+            }
+
     def _merge_weather_to_csi(self, csi_file, weather_file):
         """Merge weather data into CSI file by timestamp alignment."""
-        # Read weather data
-        weather_data = {}
-        
-        self.log(f"DEBUG: Checking weather file: {weather_file}")
-        self.log(f"DEBUG: Weather file exists: {os.path.exists(weather_file)}")
-        
-        if not os.path.exists(weather_file):
-            self.log("WARNING: No weather file to merge - skipping merge")
-            return
-        
-        try:
-            with open(weather_file, 'r') as f:
-                reader = csv.reader(f)
-                header = next(reader)
-                time_idx = header.index('time') if 'time' in header else 0
-                temp_in_idx = header.index('temp_in') if 'temp_in' in header else -1
-                humi_in_idx = header.index('humi_in') if 'humi_in' in header else -1
-                temp_out_idx = header.index('temp_out') if 'temp_out' in header else -1
-                humi_out_idx = header.index('humi_out') if 'humi_out' in header else -1
-                
-                self.log(f"DEBUG: Weather header indices - time:{time_idx}, temp_in:{temp_in_idx}, humi_in:{humi_in_idx}, temp_out:{temp_out_idx}, humi_out:{humi_out_idx}")
-                
-                row_count = 0
-                for row in reader:
-                    if len(row) > time_idx:
-                        try:
-                            ts = int(row[time_idx])
-                            weather_data[ts] = {
-                                'temp_in': row[temp_in_idx] if temp_in_idx >= 0 and temp_in_idx < len(row) else '',
-                                'humi_in': row[humi_in_idx] if humi_in_idx >= 0 and humi_in_idx < len(row) else '',
-                                'temp_out': row[temp_out_idx] if temp_out_idx >= 0 and temp_out_idx < len(row) else '',
-                                'humi_out': row[humi_out_idx] if humi_out_idx >= 0 and humi_out_idx < len(row) else ''
-                            }
-                            row_count += 1
-                        except (ValueError, IndexError) as e:
-                            self.log(f"DEBUG: Skip row - {e}")
-                            continue
-            
-            self.log(f"DEBUG: Loaded {len(weather_data)} weather records from {row_count} rows")
-        except Exception as e:
-            self.log(f"ERROR reading weather file: {e}")
-            import traceback
-            traceback.print_exc()
-            return
-        
+        # Prefer in-memory weather data (populated live via update_callback) for fast merging.
+        with self.weather_data_lock:
+            if self.weather_data:
+                weather_data = dict(self.weather_data)
+                self.log(f"DEBUG: Using in-memory weather data with {len(weather_data)} records for merge")
+            else:
+                weather_data = {}
+
+        # If no in-memory data, fall back to reading the weather temp file
+        if not weather_data:
+            self.log(f"DEBUG: No in-memory weather data, checking weather file: {weather_file}")
+            self.log(f"DEBUG: Weather file exists: {os.path.exists(weather_file)}")
+            if not os.path.exists(weather_file):
+                self.log("WARNING: No weather file to merge - skipping merge")
+                return
+
+            try:
+                with open(weather_file, 'r') as f:
+                    reader = csv.reader(f)
+                    header = next(reader)
+                    time_idx = header.index('time') if 'time' in header else 0
+                    temp_in_idx = header.index('temp_in') if 'temp_in' in header else -1
+                    humi_in_idx = header.index('humi_in') if 'humi_in' in header else -1
+                    temp_out_idx = header.index('temp_out') if 'temp_out' in header else -1
+                    humi_out_idx = header.index('humi_out') if 'humi_out' in header else -1
+                    # scenario columns
+                    scenario_idxs = []
+                    for i in range(1, 6):
+                        col = f'scenario_{i}'
+                        scenario_idxs.append(header.index(col) if col in header else -1)
+
+                    row_count = 0
+                    for row in reader:
+                        if len(row) > time_idx:
+                            try:
+                                ts = int(row[time_idx])
+                                scenarios_vals = []
+                                for idx in scenario_idxs:
+                                    scenarios_vals.append(row[idx] if idx >= 0 and idx < len(row) else '')
+
+                                weather_data[ts] = {
+                                    'temp_in': row[temp_in_idx] if temp_in_idx >= 0 and temp_in_idx < len(row) else '',
+                                    'humi_in': row[humi_in_idx] if humi_in_idx >= 0 and humi_in_idx < len(row) else '',
+                                    'temp_out': row[temp_out_idx] if temp_out_idx >= 0 and temp_out_idx < len(row) else '',
+                                    'humi_out': row[humi_out_idx] if humi_out_idx >= 0 and humi_out_idx < len(row) else '',
+                                    'scenarios': scenarios_vals
+                                }
+                                row_count += 1
+                            except (ValueError, IndexError) as e:
+                                self.log(f"DEBUG: Skip row - {e}")
+                                continue
+
+                self.log(f"DEBUG: Loaded {len(weather_data)} weather records from {row_count} rows")
+            except Exception as e:
+                self.log(f"ERROR reading weather file: {e}")
+                import traceback
+                traceback.print_exc()
+                return
+
         if not weather_data:
             self.log("WARNING: No weather data loaded - skipping merge")
             return
-        
+
         # Read CSI data and create merged file
         temp_file = csi_file + ".tmp"
         try:
             with open(csi_file, 'r') as f_in, open(temp_file, 'w', newline='') as f_out:
                 reader = csv.reader(f_in)
                 writer = csv.writer(f_out)
-                
+
                 # Read header
                 header = next(reader)
-                new_header = header + ['temp_in', 'humi_in', 'temp_out', 'humi_out']
+                # Append weather columns + scenario columns
+                scenario_headers = [f'scenario_{i}' for i in range(1, 6)]
+                new_header = header + ['temp_in', 'humi_in', 'temp_out', 'humi_out'] + scenario_headers
                 writer.writerow(new_header)
-                
+
                 # Find timestamp column in CSI data
                 time_idx = -1
                 for i, col in enumerate(header):
                     if 'time' in col.lower() or i == 0:
                         time_idx = i
                         break
-                
+
                 # Get sorted weather timestamps for quick lookup
                 sorted_weather_times = sorted(weather_data.keys())
                 self.log(f"DEBUG: Weather timestamps range: {sorted_weather_times[0] if sorted_weather_times else 'N/A'} to {sorted_weather_times[-1] if sorted_weather_times else 'N/A'}")
-                
+
                 merged_count = 0
                 # Process CSI rows
                 for row in reader:
@@ -404,25 +489,31 @@ class CSILoggerGUI:
                             weather = weather_data[closest_ts]
                             merged_count += 1
                         except (ValueError, IndexError):
-                            weather = {'temp_in': '', 'humi_in': '', 'temp_out': '', 'humi_out': ''}
+                            weather = {'temp_in': '', 'humi_in': '', 'temp_out': '', 'humi_out': '', 'scenarios': ['']*5}
                     else:
-                        weather = {'temp_in': '', 'humi_in': '', 'temp_out': '', 'humi_out': ''}
-                    
+                        weather = {'temp_in': '', 'humi_in': '', 'temp_out': '', 'humi_out': '', 'scenarios': ['']*5}
+
                     new_row = row + [weather.get('temp_in', ''), 
                                      weather.get('humi_in', ''),
                                      weather.get('temp_out', ''), 
                                      weather.get('humi_out', '')]
+                    # Append scenario values
+                    new_row += weather.get('scenarios', ['']*5)
                     writer.writerow(new_row)
-            
+
             # Replace original file
             os.replace(temp_file, csi_file)
-            self.log(f"SUCCESS: Merged {merged_count} CSI records with {len(weather_data)} weather records")
+            self.log(f"SUCCESS: Merged {merged_count} CSI records with {len(weather_data)} weather records and appended scenarios")
         except Exception as e:
             self.log(f"ERROR merging files: {e}")
             import traceback
             traceback.print_exc()
             if os.path.exists(temp_file):
                 os.remove(temp_file)
+        finally:
+            # Clear in-memory data after merge to free memory and avoid stale entries
+            with self.weather_data_lock:
+                self.weather_data.clear()
 
     def stop_logging(self):
         if not self.is_running:
