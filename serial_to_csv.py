@@ -21,6 +21,9 @@ import threading
 import queue
 from io import StringIO
 from datetime import datetime
+import subprocess
+import os
+import signal
 
 # Expected number of columns from Serial (ESP32-C5/C6)
 EXPECTED_CSV_COLUMNS = 15
@@ -210,12 +213,61 @@ def csv_writer_thread(data_queue, csv_writer, save_file_fd, stats, print_func=pr
         print_func(f'[WRITER] Finished – {written} rows written to CSV')
 
 
-def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, duration=None, max_count=None, stop_event=None, baudrate=2000000, print_func=print):
+def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, duration=None, max_count=None, stop_event=None, baudrate=2000000, print_func=print, serial_handle_ref=None):
     """
     Khởi chạy 2 thread: reader (serial→queue) và writer (queue→CSV).
     """
+    # If some other process still holds the serial device, try to free it first
+    def _get_port_pids(dev_path):
+        try:
+            out = subprocess.check_output(['lsof', '-t', dev_path], stderr=subprocess.DEVNULL)
+            pids = [int(x) for x in out.decode().split() if x.strip()]
+            return pids
+        except Exception:
+            return []
+
+    def _free_port(dev_path, wait=2.0):
+        pids = _get_port_pids(dev_path)
+        if not pids:
+            return
+        # Try polite termination first
+        for pid in pids:
+            try:
+                if pid == os.getpid():
+                    continue
+                print_func(f'[INFO] Terminating process {pid} holding {dev_path}...')
+                os.kill(pid, signal.SIGTERM)
+            except Exception:
+                pass
+
+        # wait short time
+        end = time.time() + wait
+        while time.time() < end:
+            remaining = _get_port_pids(dev_path)
+            if not remaining:
+                return
+            time.sleep(0.1)
+
+        # force kill any remaining
+        for pid in _get_port_pids(dev_path):
+            try:
+                if pid == os.getpid():
+                    continue
+                print_func(f'[WARN] Killing process {pid} (force) holding {dev_path}...')
+                os.kill(pid, signal.SIGKILL)
+            except Exception:
+                pass
+
+    _free_port(port)
+
     ser = serial.Serial(port=port, baudrate=baudrate, bytesize=8, parity='N', stopbits=1,
                         timeout=0.1)  # timeout cho readline để reader thread có thể thoát
+
+    if serial_handle_ref is not None:
+        try:
+            serial_handle_ref['serial'] = ser
+        except Exception:
+            pass
 
     if ser.isOpen():
         print_func('[SUCCESS] Serial port opened successfully')
@@ -279,7 +331,29 @@ def csi_data_read_parse(port, csv_writer, save_file_fd, log_file_fd=None, durati
     except Exception as e:
         print_func(f'[ERROR] Critical error in session: {e}')
     finally:
-        # Thống kê nhanh và thoát
+        # Thống kê nhanh và cố đóng serial nếu cần
+        try:
+            if 'ser' in locals() and ser is not None:
+                try:
+                    if hasattr(ser, 'cancel_read'):
+                        ser.cancel_read()
+                except Exception:
+                    pass
+                try:
+                    if ser.is_open:
+                        ser.close()
+                        print_func('[INFO] Serial port closed in finally')
+                except Exception:
+                    pass
+                if serial_handle_ref is not None:
+                    try:
+                        if serial_handle_ref.get('serial') is ser:
+                            serial_handle_ref['serial'] = None
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
         print_func(f'[DONE] Packets logged: {stats["valid_count"]}')
         
         print_func(f'[STATS] Duration: {stats["elapsed"]:.2f}s | '

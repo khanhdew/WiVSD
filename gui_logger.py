@@ -10,6 +10,9 @@ from datetime import datetime
 from collections import defaultdict
 from serial_to_csv import csi_data_read_parse, DATA_COLUMNS_NAMES
 from weather_collector import collect_loop, default_csv_filename as weather_csv_filename
+import subprocess
+import signal
+import sys
 
 class CSILoggerGUI:
     def __init__(self, root):
@@ -26,6 +29,9 @@ class CSILoggerGUI:
         
         self.create_widgets()
         self.refresh_ports()
+        self.current_port = None
+        self.scheduler_thread = None
+        self.serial_handle_ref = {'serial': None}
 
     def create_widgets(self):
         # Main container with padding
@@ -203,12 +209,14 @@ class CSILoggerGUI:
 
         self.is_running = True
         self.stop_event.clear() # PHẢI CÓ dòng này để có thể bắt đầu lại
+        self.current_port = port
         self.start_btn.config(state=tk.DISABLED)
         self.stop_btn.config(state=tk.NORMAL)
 
         # Run scheduler in a separate thread
         t = threading.Thread(target=self.logging_scheduler, args=(port, baudrate, duration, max_count, delay, interval, weather_interval, udp_port, scenario_1, scenario_2, scenario_3), daemon=True)
         t.start()
+        self.scheduler_thread = t
 
     def logging_scheduler(self, port, baudrate, duration, max_count, delay, interval, weather_interval, udp_port, scenario_1, scenario_2, scenario_3):
         try:
@@ -302,7 +310,8 @@ class CSILoggerGUI:
                     max_count=max_count,
                     stop_event=self.stop_event,
                     baudrate=baudrate,
-                    print_func=self.log
+                    print_func=self.log,
+                    serial_handle_ref=self.serial_handle_ref
                 )
             end_collect = time.time()
             collect_seconds = end_collect - start_collect
@@ -316,23 +325,38 @@ class CSILoggerGUI:
             # Stop weather collector if running
             if weather_thread is not None and self.weather_enabled.get():
                 self.log("Stopping weather collector...")
-                self.stop_event.set()
-                weather_thread.join(timeout=3)  # Wait for weather collector to finish
-                
-                # Merge weather data into CSI file
-                time.sleep(1)  # Give file time to close
+                # Preserve existing state of stop_event so we don't clear a user-requested stop
+                was_stop_set = self.stop_event.is_set()
                 try:
-                    self.log("Merging weather data into CSI file...")
-                    self._merge_weather_to_csi(csi_file_path, weather_file_path)
-                    if os.path.exists(weather_file_path):
-                        os.remove(weather_file_path)
-                    self.log("SUCCESS: Files merged!")
-                    time.sleep(0.5)  # Extra delay to ensure merge complete before next session
-                except Exception as e:
-                    self.log(f"WARNING: Merge failed: {e}")
+                    self.stop_event.set()
+                    weather_thread.join(timeout=3)  # Wait for weather collector to finish
+
+                    # Merge weather data into CSI file
+                    time.sleep(1)  # Give file time to close
+                    try:
+                        self.log("Merging weather data into CSI file...")
+                        self._merge_weather_to_csi(csi_file_path, weather_file_path)
+                        if os.path.exists(weather_file_path):
+                            os.remove(weather_file_path)
+                        self.log("SUCCESS: Files merged!")
+                        time.sleep(0.5)  # Extra delay to ensure merge complete before next session
+                    except Exception as e:
+                        self.log(f"WARNING: Merge failed: {e}")
                 finally:
-                    # Clear stop_event so next session can repeat
-                    self.stop_event.clear()
+                    # Restore stop_event to previous state: clear only if it wasn't set before
+                    if not was_stop_set:
+                        self.stop_event.clear()
+
+            # Ensure serial reference is cleared at the end of the session
+            try:
+                self._close_active_serial()
+            except Exception:
+                pass
+
+            try:
+                self.current_port = None
+            except Exception:
+                pass
             
             self.log(f"DEBUG: run_one_session for {timestamp} clean exit.")
 
@@ -520,8 +544,109 @@ class CSILoggerGUI:
             return
         self.log("Stopping... please wait for cleanup.")
         self.stop_event.set()
+        self._close_active_serial()
+        self._set_idle_ui()
         # Đổi trạng thái nút ngay lập tức để người dùng biết đã ghi nhận lệnh dừng
         self.stop_btn.config(state=tk.DISABLED)
+        # Start a watchdog to force-free the serial port if stop hangs
+        def _watchdog():
+            waited = 0.0
+            interval = 0.2
+            timeout = 8.0
+            while waited < timeout:
+                if not self.is_running:
+                    return
+                time.sleep(interval)
+                waited += interval
+
+            # Still running: attempt to free port processes holding the device
+            port = getattr(self, 'current_port', None)
+            if port:
+                self.log(f"WARNING: Stop timed out ({int(timeout)}s). Attempting to free {port}...")
+                try:
+                    self._force_free_port(port)
+                    self.log(f"INFO: Free attempt sent for {port}")
+                except Exception as e:
+                    self.log(f"ERROR: Force free failed: {e}")
+            else:
+                self.log("WARNING: Stop timed out but no port recorded to free.")
+
+        wd = threading.Thread(target=_watchdog, daemon=True)
+        wd.start()
+
+    def _get_port_pids(self, dev_path):
+        try:
+            out = subprocess.check_output(['lsof', '-t', dev_path], stderr=subprocess.DEVNULL)
+            pids = [int(x) for x in out.decode().split() if x.strip()]
+            return pids
+        except Exception:
+            return []
+
+    def _force_free_port(self, dev_path, wait=2.0):
+        pids = self._get_port_pids(dev_path)
+        if not pids:
+            return
+        for pid in pids:
+            try:
+                if pid == os.getpid():
+                    continue
+                self.log(f"INFO: Terminating process {pid} holding {dev_path}...")
+                os.kill(pid, signal.SIGTERM)
+            except Exception:
+                pass
+
+        end = time.time() + wait
+        while time.time() < end:
+            remaining = self._get_port_pids(dev_path)
+            if not remaining:
+                return
+            time.sleep(0.1)
+
+        for pid in self._get_port_pids(dev_path):
+            try:
+                if pid == os.getpid():
+                    continue
+                self.log(f"WARN: Killing process {pid} (force) holding {dev_path}...")
+                os.kill(pid, signal.SIGKILL)
+            except Exception:
+                pass
+
+    def _close_active_serial(self):
+        ser = None
+        try:
+            ser = self.serial_handle_ref.get('serial')
+        except Exception:
+            ser = None
+
+        if ser is None:
+            return
+
+        try:
+            if hasattr(ser, 'cancel_read'):
+                try:
+                    ser.cancel_read()
+                except Exception:
+                    pass
+            if getattr(ser, 'is_open', False):
+                ser.close()
+                self.log("INFO: Active serial closed on STOP.")
+        except Exception as e:
+            self.log(f"WARNING: Failed to close active serial: {e}")
+        finally:
+            try:
+                if self.serial_handle_ref.get('serial') is ser:
+                    self.serial_handle_ref['serial'] = None
+            except Exception:
+                pass
+
+    def _set_idle_ui(self):
+        self.is_running = False
+        self.current_port = None
+        try:
+            self.root.after(0, lambda: self.start_btn.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.stop_btn.config(state=tk.DISABLED))
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     root = tk.Tk()
