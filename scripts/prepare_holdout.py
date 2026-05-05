@@ -13,7 +13,8 @@ import shutil
 def gather_csvs(src: Path):
     if not src.exists():
         return []
-    return sorted([p for p in src.glob('*.csv')])
+    # Search recursively so CSVs inside nested experiment subfolders are included
+    return sorted([p for p in src.rglob('*.csv')])
 
 
 def copy_split(src: Path, out_train: Path, out_hold: Path, fraction: float, seed: int):

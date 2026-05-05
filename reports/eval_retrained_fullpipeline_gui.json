@@ -1,0 +1,1255 @@
+{
+  "total_samples": 54,
+  "tp": 40,
+  "fp": 0,
+  "tn": 13,
+  "fn": 1,
+  "accuracy": 0.9814814814814815,
+  "precision": 1.0,
+  "recall": 0.975609756097561,
+  "f1": 0.9876543209876543,
+  "per_sample": [
+    {
+      "path": "holdout/Router/csi_data_20260408_143623.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            11.313336389111564,
+            5.064139899586833,
+            0.4476256804721883
+          ]
+        ],
+        "proba": [
+          [
+            0.27,
+            0.73
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.73
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_143533.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            84.88175432961869,
+            2.8032467254436515,
+            0.03302531560031017
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_150226.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            123.75498896968779,
+            8.479114409902676,
+            0.068515334052347
+          ]
+        ],
+        "proba": [
+          [
+            0.075,
+            0.925
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.925
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_151846.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            56.04091335434195,
+            12.318146070040582,
+            0.2198063045859725
+          ]
+        ],
+        "proba": [
+          [
+            0.05,
+            0.95
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.95
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_133239.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            20.935362435084688,
+            9.396679906686698,
+            0.4488424757786471
+          ]
+        ],
+        "proba": [
+          [
+            0.065,
+            0.935
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.935
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_133455.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            30.16149883142873,
+            13.304480413473241,
+            0.441108065876679
+          ]
+        ],
+        "proba": [
+          [
+            0.01,
+            0.99
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.99
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_104645.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            31.02348174072836,
+            5.232288907306472,
+            0.16865576053113984
+          ]
+        ],
+        "proba": [
+          [
+            0.01,
+            0.99
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.99
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_145033.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            47.979571085077296,
+            15.084344966334521,
+            0.31439099235770546
+          ]
+        ],
+        "proba": [
+          [
+            0.325,
+            0.675
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.675
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_132016.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            97.66547736673648,
+            19.545867109140705,
+            0.2001307691943741
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_110559.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            134.69045044297357,
+            3.8070799031943885,
+            0.02826540330568026
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_152718.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            41.538613669553136,
+            9.59240297424187,
+            0.23092737399834995
+          ]
+        ],
+        "proba": [
+          [
+            0.02,
+            0.98
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.98
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260305_101622.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            27.530294588340784,
+            9.002291785607943,
+            0.32699583931878656
+          ]
+        ],
+        "proba": [
+          [
+            0.035,
+            0.965
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.965
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_144812.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            52.450360704091715,
+            9.812335953762219,
+            0.18707852190226684
+          ]
+        ],
+        "proba": [
+          [
+            0.1,
+            0.9
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.9
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260409_090959.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            112.68583112085382,
+            3.746405200892116,
+            0.03324646198752489
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_150711.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            48.346391958958954,
+            7.030857969027366,
+            0.14542673577370224
+          ]
+        ],
+        "proba": [
+          [
+            0.07,
+            0.93
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.93
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_100823.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            52.050684489836385,
+            1.9055781175166338,
+            0.03661004915101019
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260305_101756.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            29.490041873435906,
+            9.774214602103951,
+            0.3314411910316203
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_142554.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            86.31049767963852,
+            3.0156389874221543,
+            0.03493942299597669
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_132547.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            32.02004546524211,
+            11.462255122548557,
+            0.35797123195814573
+          ]
+        ],
+        "proba": [
+          [
+            0.045,
+            0.955
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.955
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_131424.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            24.97912230038276,
+            11.096175302464914,
+            0.4442179820823763
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_110835.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            130.07639655138647,
+            5.382438422256255,
+            0.04137905542401716
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_111345.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            135.31931292165075,
+            6.443060710409503,
+            0.047613755725614756
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_145748.csv",
+      "gt": 1,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            55.96629487578209,
+            15.560944749581907,
+            0.27804136014577385
+          ]
+        ],
+        "proba": [
+          [
+            0.535,
+            0.465
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.465
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_092853.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            52.50847152137225,
+            1.6775219925846006,
+            0.03194764471294518
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_100424.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            118.10669749433055,
+            3.0431908747559966,
+            0.025766454733882286
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_135054.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            40.50447874022244,
+            8.883148025377002,
+            0.2193127353236547
+          ]
+        ],
+        "proba": [
+          [
+            0.055,
+            0.945
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.945
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_143404.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            50.882573125888904,
+            11.240007448853293,
+            0.22090092458658325
+          ]
+        ],
+        "proba": [
+          [
+            0.04,
+            0.96
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.96
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_125440.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            80.74569026007681,
+            16.744522013590267,
+            0.20737356953240735
+          ]
+        ],
+        "proba": [
+          [
+            0.095,
+            0.905
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.905
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_102243.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            118.79080365554644,
+            3.591092265996255,
+            0.030230389520801797
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_150409.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            43.16807104717367,
+            9.407103253165863,
+            0.2179180821604437
+          ]
+        ],
+        "proba": [
+          [
+            0.01,
+            0.99
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.99
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_104536.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            100.99943661416044,
+            12.427354775394113,
+            0.12304380293594389
+          ]
+        ],
+        "proba": [
+          [
+            0.075,
+            0.925
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.925
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_091324.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            83.41658743551177,
+            2.187511398608956,
+            0.026223937778563418
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_135311.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            41.01937049127088,
+            11.882895834765554,
+            0.289689863409637
+          ]
+        ],
+        "proba": [
+          [
+            0.12,
+            0.88
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.88
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_152431.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            62.759945182849606,
+            12.477085576015472,
+            0.19880650850895074
+          ]
+        ],
+        "proba": [
+          [
+            0.28,
+            0.72
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.72
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_100602.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            51.155278443474614,
+            1.8529277712699632,
+            0.03622163396720448
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_133020.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            38.12600161739706,
+            14.658030072253524,
+            0.38446281934702015
+          ]
+        ],
+        "proba": [
+          [
+            0.02,
+            0.98
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.98
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_094134.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            116.87794384505422,
+            2.4968235070257943,
+            0.02136265769986378
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260407_090931.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            110.52243400902,
+            4.458351998877879,
+            0.040338887202882465
+          ]
+        ],
+        "proba": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 1.0
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_140440.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            38.53774417693601,
+            13.546477902492674,
+            0.35151195773934124
+          ]
+        ],
+        "proba": [
+          [
+            0.025,
+            0.975
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.975
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260408_125537.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            26.7462725302185,
+            10.83377223841928,
+            0.4050572739128062
+          ]
+        ],
+        "proba": [
+          [
+            0.005,
+            0.995
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.995
+      }
+    },
+    {
+      "path": "holdout/Router/csi_data_20260313_153251.csv",
+      "gt": 1,
+      "pred": 1,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            58.10972544436633,
+            13.280301993163,
+            0.2285383710146321
+          ]
+        ],
+        "proba": [
+          [
+            0.195,
+            0.805
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.805
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_115050.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            52.07496181621427,
+            14.393400307586214,
+            0.27639771217469483
+          ]
+        ],
+        "proba": [
+          [
+            0.765,
+            0.235
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.235
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260309_105435.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            21.326493917884733,
+            7.82453283268741,
+            0.36689260141938446
+          ]
+        ],
+        "proba": [
+          [
+            0.985,
+            0.015
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.015
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260305_143656.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            9.596751138867326,
+            0.5357035783381134,
+            0.05582134730664078
+          ]
+        ],
+        "proba": [
+          [
+            0.79,
+            0.21
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.21
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_113959.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            49.13287359293059,
+            13.395549593178188,
+            0.27263924565376096
+          ]
+        ],
+        "proba": [
+          [
+            0.99,
+            0.01
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.01
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_155535.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            72.90095587846638,
+            10.454404608929641,
+            0.14340559026905275
+          ]
+        ],
+        "proba": [
+          [
+            0.975,
+            0.025
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.025
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_161130.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            70.62911101330623,
+            12.090209063838019,
+            0.17117883674849418
+          ]
+        ],
+        "proba": [
+          [
+            0.64,
+            0.36
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.36
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_155837.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            74.08100223216282,
+            8.759390515187954,
+            0.11824071288529354
+          ]
+        ],
+        "proba": [
+          [
+            0.97,
+            0.03
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.03
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_154323.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            72.11111359188538,
+            10.827533268566643,
+            0.1501506873107706
+          ]
+        ],
+        "proba": [
+          [
+            0.98,
+            0.02
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.02
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_115335.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            55.982996671960315,
+            14.443583065476812,
+            0.2579994627674341
+          ]
+        ],
+        "proba": [
+          [
+            0.925,
+            0.075
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.075
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260305_143618.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            9.292085973464697,
+            0.15225367943562687,
+            0.01638530679445024
+          ]
+        ],
+        "proba": [
+          [
+            0.965,
+            0.035
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.035
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_120147.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            49.634174480156744,
+            13.167273971028523,
+            0.2652864504937555
+          ]
+        ],
+        "proba": [
+          [
+            0.965,
+            0.035
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.035
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260309_105604.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            22.252076243670427,
+            8.239955681082527,
+            0.3703005324470058
+          ]
+        ],
+        "proba": [
+          [
+            0.68,
+            0.32
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.32
+      }
+    },
+    {
+      "path": "holdout/router no person/csi_data_20260313_162302.csv",
+      "gt": 0,
+      "pred": 0,
+      "details": {
+        "model_path": "models/rf_person_detector_retrained.joblib",
+        "features": [
+          [
+            72.39927696358386,
+            9.697793873751127,
+            0.13394876690037974
+          ]
+        ],
+        "proba": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "used_threshold": 0.5,
+        "proba_used": 0.0
+      }
+    }
+  ]
+}

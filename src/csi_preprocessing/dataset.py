@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from scipy.signal import spectrogram
 
-from csi_preprocessing.parse import load_csi_csv
-from csi_preprocessing.filters import apply_hampel, apply_savgol, elliptic_bandpass
-from csi_preprocessing.pca import pca_reduce, select_pca_components
+from .parse import load_csi_csv
+from .filters import apply_hampel, apply_savgol, elliptic_bandpass
+from .pca import pca_reduce, select_pca_components
 
 
 @dataclass

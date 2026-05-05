@@ -6,16 +6,23 @@ Usage:
 from pathlib import Path
 import argparse
 import json
+import re
 
 from csi_preprocessing.classifier import predict_from_csv_fast
 
 
+def _normalize_part(part: str) -> str:
+    return re.sub(r"[\W_]+", " ", part.lower()).strip()
+
+
 def infer_label_from_path(p: Path):
     for part in p.parts:
-        lp = part.lower()
-        if 'no person' in lp or 'noperson' in lp:
+        norm = _normalize_part(part)
+        if 'no person' in norm or 'noperson' in norm:
             return 0
-        if 'router' in lp:
+    for part in p.parts:
+        norm = _normalize_part(part)
+        if 'router' in norm:
             return 1
     return None
 
@@ -24,7 +31,8 @@ def find_csvs(root: Path, subdir: str):
     d = root / subdir
     if not d.exists():
         return []
-    return sorted([p for p in d.glob('*.csv')])
+    # Search recursively to include CSVs inside nested subdirectories
+    return sorted([p for p in d.rglob('*.csv')])
 
 
 def run(root: Path, limit: int, out: Path):

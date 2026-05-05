@@ -1,0 +1,54 @@
+menu "CSI Provisioning Example Configuration"
+
+    choice EXAMPLE_MODE_SELECT
+        prompt "Select operation mode"
+        default EXAMPLE_MODE_CSI_RECV
+        help
+            Choose between CSI data reception or WiFi provisioning mode.
+
+        config EXAMPLE_MODE_CSI_RECV
+            bool "CSI Reception Mode"
+            help
+                Operate in CSI data collection mode, transmitting as SoftAP.
+
+        config EXAMPLE_MODE_PROVISIONING
+            bool "WiFi Provisioning Mode"
+            help
+                Operate in WiFi provisioning mode via BLE.
+    endchoice
+
+    config EXAMPLE_GPIO_BUTTON
+        int "GPIO pin number for mode selection button"
+        default 9
+        help
+            GPIO pin to use for triggering mode switch. Press for >= 1 second to switch mode.
+
+    config EXAMPLE_PROV_SECURITY_VERSION
+        int "Provisioning security version"
+        default 0
+        range 0 2
+        help
+            0 = plain text (insecure)
+            1 = secure with proof-of-possession
+            2 = secure with SRP6a (requires extra setup)
+
+    config EXAMPLE_WIFI_SSID
+        string "WiFi SoftAP SSID"
+        default "CSI-Device"
+        help
+            SSID for SoftAP in both CSI and provisioning modes.
+
+    config EXAMPLE_WIFI_PASS
+        string "WiFi SoftAP Password"
+        default "csi12345"
+        help
+            Password for SoftAP authentication (minimum 8 characters).
+
+    config EXAMPLE_MAX_STA_CONN
+        int "Maximum STA connections"
+        default 4
+        range 1 10
+        help
+            Maximum number of stations that can connect to the SoftAP.
+
+endmenu

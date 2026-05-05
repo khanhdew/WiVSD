@@ -6,8 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "hampel>=1.0.2",
+    "matplotlib>=3.9.0",
     "pandas>=3.0.1",
     "plotly>=6.6.0",
     "pyserial>=3.5",
+    "requests>=2.33.1",
     "scipy>=1.17.1",
 ]

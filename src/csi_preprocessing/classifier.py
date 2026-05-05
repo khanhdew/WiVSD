@@ -11,7 +11,7 @@ import json
 from typing import Tuple, Dict, Any
 
 import numpy as np
-from csi_preprocessing.parse import parse_csi_row
+from .parse import parse_csi_row
 
 
 def predict_from_quality(quality: Dict[str, Any]) -> int:

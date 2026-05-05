@@ -21,6 +21,7 @@ import tempfile
 from typing import Dict, Any, List, Optional, Tuple
 
 import numpy as np
+import re
 
 from .classifier import predict_from_npz, predict_with_model_from_csv
 from .dataset import preprocess_csv_pipeline
@@ -29,15 +30,28 @@ import multiprocessing
 import os
 
 
+def _normalize_part(part: str) -> str:
+    """Normalize a path component to a space-separated lowercase string.
+
+    Replaces non-alphanumeric characters (including underscores and dashes)
+    with spaces and collapses runs of whitespace.
+    """
+    return re.sub(r"[\W_]+", " ", part.lower()).strip()
+
+
 def infer_label_from_path(p: Path) -> Optional[int]:
+    # If any component explicitly indicates "no person", prefer negative label.
     for part in p.parts:
-        lp = part.lower()
-        if 'no person' in lp or 'noperson' in lp:
+        norm = _normalize_part(part)
+        if 'no person' in norm or 'noperson' in norm:
             return 0
-        if 'router no person' in lp:
-            return 0
-        if 'router' in lp:
+
+    # Otherwise if any component indicates router, return positive.
+    for part in p.parts:
+        norm = _normalize_part(part)
+        if 'router' in norm:
             return 1
+
     return None
 
 
@@ -47,7 +61,14 @@ def find_candidate_npzs(root: Path) -> List[Path]:
 
 
 def find_candidate_csvs(root: Path) -> List[Path]:
-    return [p for p in root.rglob('*.csv') if any(('router' in part.lower() or 'no person' in part.lower()) for part in p.parts)]
+    def _looks_like_target(p: Path) -> bool:
+        for part in p.parts:
+            norm = _normalize_part(part)
+            if 'router' in norm or 'no person' in norm or 'noperson' in norm:
+                return True
+        return False
+
+    return [p for p in root.rglob('*.csv') if _looks_like_target(p)]
 
 
 def _process_npz_worker(npz_path_str: str, model_path_str: Optional[str] = None, threshold: float = 0.25) -> Optional[Dict[str, Any]]:
@@ -66,6 +87,9 @@ def _process_npz_worker(npz_path_str: str, model_path_str: Optional[str] = None,
                 if csvs:
                     # prefer first CSV found
                     pred, details = predict_with_model_from_csv(csvs[0], model_path=model_path_str)
+                    # If feature extraction failed, skip this sample to match training behavior
+                    if isinstance(details, dict) and details.get('error'):
+                        return {'path': str(npz_path), 'ground_truth': int(gt), 'prediction': None, 'error': details.get('error'), 'details': details}
                     # If model returned probabilities, apply threshold to decide final prediction
                     prob = None
                     if isinstance(details, dict) and 'proba' in details:
@@ -102,6 +126,9 @@ def _process_csv_worker(csv_path_str: str, model_path_str: Optional[str] = None,
         if model_path_str:
             try:
                 pred, details = predict_with_model_from_csv(csv_path, model_path=model_path_str)
+                # If feature extraction failed, skip this sample to match training behavior
+                if isinstance(details, dict) and details.get('error'):
+                    return {'path': str(csv_path), 'ground_truth': int(gt), 'prediction': None, 'error': details.get('error'), 'details': details}
                 prob = None
                 if isinstance(details, dict) and 'proba' in details:
                     try:
