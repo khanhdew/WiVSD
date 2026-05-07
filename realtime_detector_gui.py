@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from scipy.signal import ellip, savgol_filter, sosfiltfilt
+from concurrent.futures import ThreadPoolExecutor
 
 from serial_to_csv import DATA_COLUMNS_NAMES
 from src.csi_preprocessing.classifier import predict_with_model_features
@@ -37,7 +38,7 @@ from src.csi_preprocessing.classifier import predict_with_model_features
 class RealtimeDetectorGUI:
     """GUI for real-time CSI detection with ESP32."""
     
-    EXPECTED_CSV_COLUMNS = 15
+    SUPPORTED_CSV_COLUMNS = (15, 25)
     
     @staticmethod
     def parse_csi_line(line: str):
@@ -49,7 +50,7 @@ class RealtimeDetectorGUI:
             reader = csv.reader(StringIO(line.strip()))
             csi_data = next(reader)
             
-            if len(csi_data) != RealtimeDetectorGUI.EXPECTED_CSV_COLUMNS:
+            if len(csi_data) not in RealtimeDetectorGUI.SUPPORTED_CSV_COLUMNS:
                 return None
             
             try:
@@ -159,6 +160,10 @@ class RealtimeDetectorGUI:
         )
         self.plot_mode_combo.grid(row=2, column=1, padx=5, sticky=tk.W, pady=5)
         self.plot_mode_combo.bind("<<ComboboxSelected>>", self.on_plot_mode_change)
+
+        ttk.Label(detect_group, text="Confidence Threshold:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.threshold_var = tk.StringVar(value="0.25")
+        ttk.Entry(detect_group, textvariable=self.threshold_var).grid(row=3, column=1, padx=5, sticky=tk.W, pady=5)
 
         # Control Buttons
         button_frame = ttk.Frame(main_frame)
@@ -415,51 +420,89 @@ class RealtimeDetectorGUI:
 
         self.waveform_canvas.draw_idle()
 
-    def process_processed_mode(self):
+    def process_processed_mode(self, csv_rows=None):
         """Run the batch preprocessing pipeline and publish the result."""
-        if not self.raw_amplitude_series or not self.raw_phase_series:
+        if csv_rows is None and (not self.raw_amplitude_series or not self.raw_phase_series):
             self.log("No raw CSI data to process")
             return
 
         try:
             self.log("Starting batch processing: Hampel -> SG -> Elliptic -> PCA")
 
-            amp_lengths = [len(row) for row in self.raw_amplitude_series if len(row) > 0]
-            phs_lengths = [len(row) for row in self.raw_phase_series if len(row) > 0]
-            if not amp_lengths or not phs_lengths:
-                self.log("Batch processing skipped: insufficient CSI length")
-                return
+            if csv_rows is None:
+                amp_lengths = [len(row) for row in self.raw_amplitude_series if len(row) > 0]
+                phs_lengths = [len(row) for row in self.raw_phase_series if len(row) > 0]
+                if not amp_lengths or not phs_lengths:
+                    self.log("Batch processing skipped: insufficient CSI length")
+                    return
 
-            subcarrier_count = min(min(amp_lengths), min(phs_lengths))
-            amp_matrix = np.asarray([row[:subcarrier_count] for row in self.raw_amplitude_series], dtype=np.float64)
-            phs_matrix = np.asarray([row[:subcarrier_count] for row in self.raw_phase_series], dtype=np.float64)
+                subcarrier_count = min(min(amp_lengths), min(phs_lengths))
+                amp_matrix = np.asarray([row[:subcarrier_count] for row in self.raw_amplitude_series], dtype=np.float64)
+                phs_matrix = np.asarray([row[:subcarrier_count] for row in self.raw_phase_series], dtype=np.float64)
+            else:
+                amp_rows = []
+                phs_rows = []
+                for row in csv_rows:
+                    try:
+                        data_str = row[-1]
+                        data = json.loads(data_str) if isinstance(data_str, str) else data_str
+                        data_array = np.asarray(data, dtype=np.float64)
+                        if data_array.size < 2:
+                            continue
+                        imag = data_array[0::2]
+                        real = data_array[1::2]
+                        length = min(len(real), len(imag))
+                        if length == 0:
+                            continue
+                        amp_rows.append(np.sqrt(real[:length] ** 2 + imag[:length] ** 2))
+                        phs_rows.append(np.angle(np.array(real[:length], dtype=np.complex128) + 1j * np.array(imag[:length], dtype=np.complex128)))
+                    except Exception:
+                        continue
 
-            amp_hampel = np.column_stack([
-                self.hampel_filter_1d(amp_matrix[:, idx], window_size=15, n_sigma=3.0)
-                for idx in range(subcarrier_count)
-            ])
-            phs_hampel = np.column_stack([
-                self.hampel_filter_1d(phs_matrix[:, idx], window_size=15, n_sigma=3.0)
-                for idx in range(subcarrier_count)
-            ])
+                if not amp_rows or not phs_rows:
+                    self.log("Batch processing skipped: no valid packets in current window")
+                    return
 
-            amp_sg = np.column_stack([
-                self.safe_savgol_filter(amp_hampel[:, idx], window_length=31, polyorder=3)
-                for idx in range(subcarrier_count)
-            ])
-            phs_sg = np.column_stack([
-                self.safe_savgol_filter(phs_hampel[:, idx], window_length=41, polyorder=3)
-                for idx in range(subcarrier_count)
-            ])
+                subcarrier_count = min(min(len(row) for row in amp_rows), min(len(row) for row in phs_rows))
+                amp_matrix = np.asarray([row[:subcarrier_count] for row in amp_rows], dtype=np.float64)
+                phs_matrix = np.asarray([row[:subcarrier_count] for row in phs_rows], dtype=np.float64)
 
-            amp_ellip = np.column_stack([
-                self.apply_elliptic_bandpass(col, 0.15, 0.5, order=4, rp=0.1, rs=40, fs=100.0)
-                for col in amp_sg.T
-            ])
-            phs_ellip = np.column_stack([
-                self.apply_elliptic_bandpass(col, 0.1, 0.6, order=2, rp=0.5, rs=50, fs=100.0)
-                for col in phs_sg.T
-            ])
+            worker_count = max(1, (os.cpu_count() or 2) - 1)
+
+            def process_columns(matrix, stage_func):
+                columns = [matrix[:, idx] for idx in range(matrix.shape[1])]
+                if worker_count == 1 or len(columns) < 4:
+                    return np.column_stack([stage_func(col) for col in columns])
+                with ThreadPoolExecutor(max_workers=worker_count) as executor:
+                    processed = list(executor.map(stage_func, columns))
+                return np.column_stack(processed)
+
+            amp_hampel = process_columns(
+                amp_matrix,
+                lambda col: self.hampel_filter_1d(col, window_size=15, n_sigma=3.0),
+            )
+            phs_hampel = process_columns(
+                phs_matrix,
+                lambda col: self.hampel_filter_1d(col, window_size=15, n_sigma=3.0),
+            )
+
+            amp_sg = process_columns(
+                amp_hampel,
+                lambda col: self.safe_savgol_filter(col, window_length=31, polyorder=3),
+            )
+            phs_sg = process_columns(
+                phs_hampel,
+                lambda col: self.safe_savgol_filter(col, window_length=41, polyorder=3),
+            )
+
+            amp_ellip = process_columns(
+                amp_sg,
+                lambda col: self.apply_elliptic_bandpass(col, 0.15, 0.5, order=4, rp=0.1, rs=40, fs=100.0),
+            )
+            phs_ellip = process_columns(
+                phs_sg,
+                lambda col: self.apply_elliptic_bandpass(col, 0.1, 0.6, order=2, rp=0.5, rs=50, fs=100.0),
+            )
 
             amp_pca, amp_explained = self.compute_pca(amp_ellip, n_components=5)
             phs_pca, phs_explained = self.compute_pca(phs_ellip, n_components=5)
@@ -680,7 +723,7 @@ class RealtimeDetectorGUI:
         
         self.log("Detection stopped")
 
-        if self.plot_mode_var.get() == "processed" and self.raw_amplitude_series:
+        if self.plot_mode_var.get() == "processed" and self.raw_amplitude_series and self.processed_result is None:
             self.status_label.config(text="PROCESSING", foreground="orange")
             self.processing_in_progress = True
             if self.ui_refresh_job is None:
@@ -768,6 +811,14 @@ class RealtimeDetectorGUI:
                     
                     if packet_count % window_size == 0:
                         self.predict_from_buffer(csv_buffer, model_path)
+                        if self.plot_mode_var.get() == "processed" and not self.processing_in_progress:
+                            window_snapshot = csv_buffer.copy()
+                            self.processing_in_progress = True
+                            threading.Thread(
+                                target=self.process_processed_mode,
+                                args=(window_snapshot,),
+                                daemon=True,
+                            ).start()
                         csv_buffer = []
                         
             except Exception as e:
@@ -807,9 +858,17 @@ class RealtimeDetectorGUI:
             # Predict
             features = [amp_mean, amp_std, amp_cv]
             pred, details = predict_with_model_features(features, model_path)
-            
+
             proba = details.get('proba', [[0, 0]])[0]
-            confidence = max(proba) if proba else 0.5
+            positive_confidence = float(proba[1]) if len(proba) > 1 else 0.5
+            confidence = positive_confidence if proba else 0.5
+            try:
+                threshold = float(self.threshold_var.get())
+            except Exception:
+                threshold = 0.25
+
+            if proba:
+                pred = 1 if positive_confidence >= threshold else 0
             
             # Update stats
             pred_label = "PERSON" if pred == 1 else "NO PERSON"

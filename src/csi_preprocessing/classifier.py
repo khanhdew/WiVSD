@@ -8,7 +8,7 @@ Heuristics are intentionally simple and explainable for quick evaluation.
 """
 from pathlib import Path
 import json
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 
 import numpy as np
 from .parse import parse_csi_row
@@ -179,7 +179,7 @@ def _load_trained_model(model_path: Path | str = 'models/rf_person_detector.jobl
     return _LOADED_MODEL
 
 
-def predict_with_model_features(features: Any, model_path: Path | str = 'models/rf_person_detector.joblib'):
+def predict_with_model_features(features: Any, model_path: Path | str = 'models/rf_person_detector.joblib', threshold: Optional[float] = None):
     """Predict using a trained pipeline from a raw feature vector.
 
     `features` should be an iterable of shape (n_features,) or (1, n_features).
@@ -196,13 +196,33 @@ def predict_with_model_features(features: Any, model_path: Path | str = 'models/
     if arr.ndim == 1:
         arr = arr.reshape(1, -1)
     try:
-        pred = model.predict(arr)
         details = {'model_path': str(model_path), 'features': arr.tolist()}
+        # If a threshold is provided and model supports probabilities, use it to determine prediction
+        if threshold is not None and hasattr(model, 'predict_proba'):
+            try:
+                proba = model.predict_proba(arr)
+                # probability for positive class (assumed index 1)
+                prob_pos = float(proba[0][1]) if hasattr(proba[0], '__len__') and len(proba[0]) > 1 else None
+                details['proba'] = proba.tolist() if hasattr(proba, 'tolist') else proba
+                details['confidence'] = prob_pos
+                if prob_pos is not None:
+                    pred_val = 1 if prob_pos >= float(threshold) else 0
+                    return int(pred_val), details
+            except Exception:
+                # fall through to label prediction
+                pass
+
+        # Fallback: use model's hard prediction
+        pred = model.predict(arr)
         # include probability when available
         if hasattr(model, 'predict_proba'):
             try:
                 proba = model.predict_proba(arr).tolist()
                 details['proba'] = proba
+                try:
+                    details['confidence'] = float(proba[0][1]) if len(proba) and len(proba[0]) > 1 else None
+                except Exception:
+                    details['confidence'] = None
             except Exception:
                 pass
         return int(pred[0]), details
@@ -210,8 +230,13 @@ def predict_with_model_features(features: Any, model_path: Path | str = 'models/
         return 0, {'error': 'model_predict_failed', 'exc': str(e)}
 
 
-def predict_with_model_from_csv(csv_path: Path, model_path: Path | str = 'models/rf_person_detector.joblib', n_packets_max: int = 200):
+def predict_with_model_from_csv(csv_path: Path, model_path: Path | str = 'models/rf_person_detector.joblib', n_packets_max: int = 200, threshold: Optional[float] = None):
     """Compute CSV features and predict with trained model.
+
+    If `threshold` is provided and the trained model exposes probabilities,
+    the returned prediction will be decided by comparing the positive-class
+    probability against `threshold`. The `details` dict will include
+    `proba` and `confidence` when available.
 
     Returns (prediction:int, details:dict) or error details.
     """
@@ -226,4 +251,4 @@ def predict_with_model_from_csv(csv_path: Path, model_path: Path | str = 'models
         return 0, {'error': 'missing_features', 'details': details}
 
     features = [float(amp_mean), float(amp_std), float(amp_cv)]
-    return predict_with_model_features(features, model_path=model_path)
+    return predict_with_model_features(features, model_path=model_path, threshold=threshold)

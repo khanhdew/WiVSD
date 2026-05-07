@@ -201,4 +201,15 @@ def preprocess_csv_pipeline(csv_path: Path, output_dir: Path, fs: float = 100.0,
 
     save_dataset(output_dir, cnn_input, freqs_amp if freqs_amp is not None else np.array([]), times_amp if times_amp is not None else np.array([]), quality)
 
-    return {'output': str(output_dir), 'quality': quality}
+    return {
+        'output': str(output_dir),
+        'quality': quality,
+        'artifacts': {
+            'amp_pca': amp_pca,
+            'phase_pca': phase_pca,
+            'amp_pca_variance_ratio': amp_model.explained_variance_ratio_ if amp_model is not None else np.array([]),
+            'phase_pca_variance_ratio': phase_model.explained_variance_ratio_ if phase_model is not None else np.array([]),
+            'amp_pca_selected': amp_selected,
+            'phase_pca_selected': phase_selected,
+        },
+    }

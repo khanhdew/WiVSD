@@ -268,7 +268,7 @@ class PipelineGUI(tk.Tk):
             return
 
         try:
-            pred, details = predict_with_model_from_csv(Path(path), model_path=self.model_out.get())
+            pred, details = predict_with_model_from_csv(Path(path), model_path=self.model_out.get(), threshold=self.threshold.get())
         except Exception as e:
             self._enqueue(('line', f'Error during prediction: {e}\n'))
             return
@@ -281,7 +281,23 @@ class PipelineGUI(tk.Tk):
             return
 
         res = {'path': path, 'prediction': int(pred), 'details': details}
-        self._enqueue(('line', f'Predicted {res["prediction"]} for {path}\n'))
+        # extract confidence if provided
+        conf = None
+        if isinstance(details, dict):
+            conf = details.get('confidence')
+            if conf is None and details.get('proba'):
+                try:
+                    p = details.get('proba')
+                    # proba may be nested list e.g. [[p0, p1]]
+                    if isinstance(p, list) and p and isinstance(p[0], (list, tuple)) and len(p[0]) > 1:
+                        conf = float(p[0][1])
+                except Exception:
+                    conf = None
+
+        if conf is not None:
+            self._enqueue(('line', f'Predicted {res["prediction"]} for {path} (confidence={conf:.3f})\n'))
+        else:
+            self._enqueue(('line', f'Predicted {res["prediction"]} for {path}\n'))
         self._show_single_result(res)
 
     def _show_single_result(self, data: dict):
