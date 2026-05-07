@@ -1,0 +1,22 @@
+{
+  "Router": {
+    "source_dir": "Router",
+    "scanned": 207,
+    "unique": 207,
+    "train": 166,
+    "holdout": 41,
+    "duplicate_groups": 0,
+    "duplicate_sample": {}
+  },
+  "router no person": {
+    "source_dir": "router no person",
+    "scanned": 65,
+    "unique": 65,
+    "train": 52,
+    "holdout": 13,
+    "duplicate_groups": 0,
+    "duplicate_sample": {}
+  },
+  "cross_class_overlaps": 0,
+  "cross_class_sample": {}
+}

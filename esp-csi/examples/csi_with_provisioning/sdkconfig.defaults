@@ -1,0 +1,4 @@
+# Enable BLE provisioning support for this example
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
+# CONFIG_BT_BLUEDROID_ENABLED is not set

@@ -26,8 +26,9 @@
 #include "wifi_provisioning/wifi_config.h"
 #include "wifi_provisioning/manager.h"
 #include "wifi_provisioning/scheme_ble.h"
+#include "sdkconfig.h"
 
-#include "esp_csi_gain_ctrl.h"
+// #include "esp_csi_gain_ctrl.h"
 
 #define TAG "csi_prov_example"
 #define PROV_BLE_SERVICE_NAME_PREFIX "CSI_PROV"
