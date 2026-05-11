@@ -13,6 +13,7 @@ Logs appear in the text area; JSON reports are parsed to show basic metrics afte
 from __future__ import annotations
 import json
 import os
+import re
 import queue
 import subprocess
 import threading
@@ -34,6 +35,7 @@ class PipelineGUI(tk.Tk):
         self.neg_src = tk.StringVar(value='router no person')
         self.train_tmp = tk.StringVar(value='tmp_train')
         self.holdout = tk.StringVar(value='holdout')
+        self.feature_cache = tk.StringVar(value='/tmp/wivsd_feature_cache')
         self.fraction = tk.DoubleVar(value=0.2)
         self.seed = tk.IntVar(value=42)
         self.model_out = tk.StringVar(value='models/rf_person_detector_retrained.joblib')
@@ -45,6 +47,9 @@ class PipelineGUI(tk.Tk):
         self.move_duplicates = tk.BooleanVar(value=False)
         self.duplicates_dir = tk.StringVar(value='data_duplicates')
         self.rebuild_report = tk.StringVar(value='reports/rebuild_split_gui.json')
+        self.precompute_status = tk.StringVar(value='Precompute: idle')
+        self.precompute_total = tk.IntVar(value=0)
+        self.precompute_done = tk.IntVar(value=0)
 
         self._build_ui()
         self.after(100, self._poll_queue)
@@ -75,11 +80,15 @@ class PipelineGUI(tk.Tk):
         ttk.Label(frm, text='Model out:').grid(column=0, row=3, sticky='w')
         ttk.Entry(frm, textvariable=self.model_out, width=40).grid(column=1, row=3, columnspan=3, sticky='w')
 
+        # Row 4b: feature cache
+        ttk.Label(frm, text='Feature cache:').grid(column=0, row=4, sticky='w')
+        ttk.Entry(frm, textvariable=self.feature_cache, width=40).grid(column=1, row=4, columnspan=3, sticky='w')
+
         # Row 5: eval options
-        ttk.Label(frm, text='Jobs:').grid(column=0, row=4, sticky='w')
-        ttk.Entry(frm, textvariable=self.jobs, width=6).grid(column=1, row=4, sticky='w')
-        ttk.Label(frm, text='Threshold:').grid(column=2, row=4, sticky='w')
-        ttk.Entry(frm, textvariable=self.threshold, width=6).grid(column=3, row=4, sticky='w')
+        ttk.Label(frm, text='Jobs:').grid(column=0, row=5, sticky='w')
+        ttk.Entry(frm, textvariable=self.jobs, width=6).grid(column=1, row=5, sticky='w')
+        ttk.Label(frm, text='Threshold:').grid(column=2, row=5, sticky='w')
+        ttk.Entry(frm, textvariable=self.threshold, width=6).grid(column=3, row=5, sticky='w')
 
         # Row 6: checkbuttons and duplicates settings
         ttk.Checkbutton(frm, text='Dry run (dedup)', variable=self.dry_run).grid(column=0, row=5, sticky='w')
@@ -95,9 +104,17 @@ class PipelineGUI(tk.Tk):
         ttk.Button(btn_frm, text='Show duplicates', command=self._show_duplicates).pack(side='left', padx=(6, 0))
         ttk.Button(btn_frm, text='Upload & Eval', command=self._on_upload_and_eval).pack(side='left', padx=(6, 0))
         ttk.Button(btn_frm, text='Train', command=self._on_train).pack(side='left', padx=(6, 0))
+        ttk.Button(btn_frm, text='Precompute', command=self._on_precompute).pack(side='left', padx=(6, 0))
         ttk.Button(btn_frm, text='Evaluate', command=self._on_evaluate).pack(side='left', padx=(6, 0))
         ttk.Button(btn_frm, text='Full pipeline', command=self._on_full_pipeline).pack(side='left', padx=(6, 0))
         ttk.Button(btn_frm, text='Clear log', command=lambda: self.log.delete('1.0', 'end')).pack(side='right')
+
+        # Precompute status
+        status_frm = ttk.Frame(self)
+        status_frm.pack(fill='x', padx=8, pady=(6, 0))
+        ttk.Label(status_frm, textvariable=self.precompute_status).pack(anchor='w')
+        self.precompute_bar = ttk.Progressbar(status_frm, mode='determinate', maximum=100)
+        self.precompute_bar.pack(fill='x', expand=True)
 
         # Log area
         self.log = ScrolledText(self, height=18)
@@ -128,7 +145,9 @@ class PipelineGUI(tk.Tk):
             while True:
                 item = self.queue.get_nowait()
                 if isinstance(item, tuple) and item and item[0] == 'line':
-                    self.log.insert('end', item[1])
+                    line = item[1]
+                    self._update_precompute_status_from_line(line)
+                    self.log.insert('end', line)
                     self.log.see('end')
                 elif isinstance(item, tuple) and item and item[0] == 'done':
                     code = item[1]
@@ -170,6 +189,45 @@ class PipelineGUI(tk.Tk):
         t = threading.Thread(target=worker, daemon=True)
         t.start()
 
+    def _update_precompute_status_from_line(self, line: str):
+        if not line.startswith('[precompute]'):
+            return
+
+        total_match = re.search(r'queued\s+(\d+)\s+csv files', line)
+        if total_match:
+            total = int(total_match.group(1))
+            self.precompute_total.set(total)
+            self.precompute_done.set(0)
+            self.precompute_bar.configure(maximum=max(total, 1))
+            self.precompute_bar['value'] = 0
+            self.precompute_status.set(f'Precompute: queued {total} files')
+            return
+
+        progress_match = re.search(r'progress\s+(\d+)\/(\d+)\s+(cached|error)', line)
+        if progress_match:
+            done = int(progress_match.group(1))
+            total = int(progress_match.group(2))
+            state = progress_match.group(3)
+            self.precompute_total.set(total)
+            self.precompute_done.set(done)
+            self.precompute_bar.configure(maximum=max(total, 1))
+            self.precompute_bar['value'] = done
+            self.precompute_status.set(f'Precompute: {done}/{total} done ({state})')
+            return
+
+        if 'Precompute done:' in line:
+            done_match = re.search(r'Precompute done:\s+total=(\d+),\s+cached=(\d+),\s+errors=(\d+)', line)
+            if done_match:
+                total = int(done_match.group(1))
+                cached = int(done_match.group(2))
+                errors = int(done_match.group(3))
+                self.precompute_total.set(total)
+                self.precompute_done.set(total)
+                self.precompute_bar.configure(maximum=max(total, 1))
+                self.precompute_bar['value'] = total
+                self.precompute_status.set(f'Precompute: finished {cached}/{total}, errors={errors}')
+            return
+
     def _on_dedup_dry(self):
         cmd = [
             'python3', 'scripts/dedup_and_split.py',
@@ -207,6 +265,19 @@ class PipelineGUI(tk.Tk):
         ]
         self.log.insert('end', f"Running train: {' '.join(cmd)}\n")
         self._run_subprocess(cmd, callback=lambda: self._on_report_generated(self.model_report.get()))
+
+    def _on_precompute(self):
+        cmd = [
+            'python3', 'scripts/precompute_features.py',
+            '--root', '.',
+            '--feature-cache', self.feature_cache.get(),
+            '--pos-dirs', self.pos_src.get(),
+            '--neg-dirs', self.neg_src.get(),
+            '--n-jobs', str(self.jobs.get()),
+        ]
+        self.log.insert('end', f"Running precompute: {' '.join(cmd)}\n")
+        # no report file produced; just stream output
+        self._run_subprocess(cmd, callback=None)
 
     def _on_evaluate(self):
         cmd = [
