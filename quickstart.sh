@@ -20,7 +20,7 @@ echo -e "${BLUE}[2/4] Checking dependencies...${NC}"
 python3 -c "import pandas, numpy, scipy, serial, joblib" 2>/dev/null || {
     echo -e "${YELLOW}Some dependencies missing. Installing...${NC}"
     pip install --upgrade pip
-    pip install pandas numpy scipy pyserial scikit-learn joblib hampel
+    pip install pandas numpy scipy pyserial scikit-learn joblib numba
 }
 
 # Check model file

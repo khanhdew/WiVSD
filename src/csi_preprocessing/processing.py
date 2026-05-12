@@ -7,6 +7,13 @@ import numpy as np
 import pandas as pd
 from scipy.signal import ellip, sosfiltfilt, savgol_filter, spectrogram
 from sklearn.decomposition import PCA
+try:
+    from numba import jit
+    NUMBA_AVAILABLE = True
+except Exception:
+    NUMBA_AVAILABLE = False
+    def jit(*args, **kwargs):
+        return lambda f: f
 
 
 @dataclass
@@ -73,17 +80,45 @@ def sanitize_phase_robust(phase_array: np.ndarray) -> np.ndarray:
     return sanitized
 
 
+@jit(nopython=True, cache=True, fastmath=True)
+def _hampel_numba_impl(data: np.ndarray, window_size: int, n_sigma: float) -> np.ndarray:
+    """Numba JIT-compiled Hampel filter for speed."""
+    n = len(data)
+    filtered = data.copy()
+    half_window = window_size // 2
+    
+    for i in range(n):
+        # Get window around current point
+        start = max(0, i - half_window)
+        end = min(n, i + half_window + 1)
+        window = data[start:end]
+        
+        # Calculate median and MAD (median absolute deviation)
+        median_val = np.median(window)
+        mad = np.median(np.abs(window - median_val))
+        
+        # Detect and replace outliers
+        threshold = n_sigma * mad
+        if np.abs(data[i] - median_val) > threshold and mad > 0:
+            filtered[i] = median_val
+    
+    return filtered
+
+
 def apply_hampel(data: np.ndarray, window_size: int, n_sigma: float) -> np.ndarray:
-    try:
-        from hampel import hampel
-    except ImportError:
-        raise
+    """Apply Hampel filter using Numba-compiled implementation."""
     if len(data) == 0:
         return data
+    
+    # Pad data to handle boundaries
     pad_len = window_size * 2
     padded = np.pad(data, (pad_len, pad_len), mode='reflect')
-    res = hampel(padded, window_size=window_size, n_sigma=n_sigma)
-    return res.filtered_data[pad_len:-pad_len]
+    
+    # Apply Hampel filter
+    filtered_padded = _hampel_numba_impl(padded, window_size, n_sigma)
+    
+    # Remove padding
+    return filtered_padded[pad_len:-pad_len]
 
 
 def apply_savgol(data: np.ndarray, window_length: int, polyorder: int) -> np.ndarray:
